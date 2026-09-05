@@ -1,0 +1,570 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>TalentX Dashboard</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;500;600;700;800;900&display=swap">
+<style>
+:root {
+  --bg-deep: #F4F3F0;
+  --bg-surface: rgba(255,255,255,0.65);
+  --bg-surface-hover: rgba(255,255,255,0.88);
+  --bg-elevated: rgba(255,255,255,0.78);
+  --brand-green: #4A8A5A;
+  --brand-green-light: #5EA86E;
+  --brand-green-deep: #3A7048;
+  --brand-dark: #1A1A1A;
+  --green-glow: rgba(74,138,90,0.18);
+  --dark-glow: rgba(26,26,26,0.08);
+  --text-primary: #1A1A1A;
+  --text-secondary: #4A4A52;
+  --text-tertiary: #7A7A86;
+  --glass-border: rgba(74,138,90,0.08);
+  --glass-blur: 24px;
+  --card-shadow: 0 4px 24px rgba(26,26,26,0.06), 0 1px 3px rgba(0,0,0,0.03);
+  --card-shadow-hover: 0 12px 40px rgba(26,26,26,0.10), 0 2px 6px rgba(0,0,0,0.04);
+  --up-color: #0ca30c;
+  --down-color: #d97706;
+  --chart-current: #3A8A52;
+  --chart-previous: #2A78D6;
+  --orb-1: rgba(74,138,90,0.05);
+  --orb-2: rgba(26,26,26,0.03);
+  --intro-bg: #1A2A20;
+  --intro-text: #E8EAE6;
+  --section-line: var(--brand-green);
+  --insight-accent: var(--brand-green-deep);
+  --insight-bg: rgba(74,138,90,0.035);
+  --footer-bg: rgba(74,138,90,0.02);
+  --prev-card-opacity: 0.70;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --bg-deep: #0C0E10;
+    --bg-surface: rgba(20,28,24,0.55);
+    --bg-surface-hover: rgba(28,38,32,0.72);
+    --bg-elevated: rgba(24,34,28,0.65);
+    --brand-green: #5EA86E;
+    --brand-green-light: #72C082;
+    --brand-green-deep: #4A9058;
+    --brand-dark: #E8EAE6;
+    --green-glow: rgba(94,168,110,0.14);
+    --dark-glow: rgba(232,234,230,0.05);
+    --text-primary: #E8EAE6;
+    --text-secondary: #9A9EA6;
+    --text-tertiary: #6A6E78;
+    --glass-border: rgba(94,168,110,0.07);
+    --card-shadow: 0 4px 24px rgba(0,0,0,0.20), 0 1px 3px rgba(0,0,0,0.10);
+    --card-shadow-hover: 0 12px 40px rgba(0,0,0,0.28), 0 2px 6px rgba(0,0,0,0.15);
+    --up-color: #4ade80;
+    --down-color: #fbbf24;
+    --chart-current: #4CA868;
+    --chart-previous: #3987E5;
+    --orb-1: rgba(94,168,110,0.05);
+    --orb-2: rgba(232,234,230,0.02);
+    --section-line: var(--brand-green);
+    --insight-accent: var(--brand-green);
+    --insight-bg: rgba(94,168,110,0.04);
+    --footer-bg: rgba(255,255,255,0.02);
+    --prev-card-opacity: 0.60;
+  }
+}
+:root[data-theme="dark"] {
+  --bg-deep: #0C0E10;
+  --bg-surface: rgba(20,28,24,0.55);
+  --bg-surface-hover: rgba(28,38,32,0.72);
+  --bg-elevated: rgba(24,34,28,0.65);
+  --brand-green: #5EA86E;
+  --brand-green-light: #72C082;
+  --brand-green-deep: #4A9058;
+  --brand-dark: #E8EAE6;
+  --green-glow: rgba(94,168,110,0.14);
+  --dark-glow: rgba(232,234,230,0.05);
+  --text-primary: #E8EAE6;
+  --text-secondary: #9A9EA6;
+  --text-tertiary: #6A6E78;
+  --glass-border: rgba(94,168,110,0.07);
+  --card-shadow: 0 4px 24px rgba(0,0,0,0.20), 0 1px 3px rgba(0,0,0,0.10);
+  --card-shadow-hover: 0 12px 40px rgba(0,0,0,0.28), 0 2px 6px rgba(0,0,0,0.15);
+  --up-color: #4ade80;
+  --down-color: #fbbf24;
+  --chart-current: #4CA868;
+  --chart-previous: #3987E5;
+  --orb-1: rgba(94,168,110,0.05);
+  --orb-2: rgba(232,234,230,0.02);
+  --section-line: var(--brand-green);
+  --insight-accent: var(--brand-green);
+  --insight-bg: rgba(94,168,110,0.04);
+  --footer-bg: rgba(255,255,255,0.02);
+  --prev-card-opacity: 0.60;
+}
+
+*, *::before, *::after { box-sizing: border-box; }
+body {
+  font-family: 'Nunito', system-ui, -apple-system, sans-serif;
+  background: var(--bg-deep); color: var(--text-primary);
+  margin: 0; padding: 0; min-height: 100vh; overflow-x: hidden;
+}
+
+/* ── Intro ── */
+.intro-overlay {
+  position: fixed; inset: 0; z-index: 9999;
+  background: var(--intro-bg);
+  display: flex; flex-direction: column; align-items: center; justify-content: center;
+  transition: opacity 0.5s ease;
+}
+.intro-overlay.fade-out { opacity: 0; pointer-events: none; }
+.intro-overlay.hidden { display: none; }
+.intro-canvas { position: absolute; inset: 0; width: 100%; height: 100%; }
+.intro-logo-wrap {
+  position: relative; z-index: 2; text-align: center;
+  opacity: 0; transform: scale(0.92);
+  animation: introReveal 0.6s ease 0.5s forwards;
+}
+.intro-logo-wrap img { height: 80px; width: auto; margin-bottom: 0.5rem; }
+.intro-tagline {
+  font-size: 0.72rem; font-weight: 600; color: rgba(232,234,230,0.45);
+  letter-spacing: 0.22em; text-transform: uppercase;
+  opacity: 0; animation: introFadeUp 0.4s ease 0.9s forwards;
+}
+.intro-title {
+  font-size: 1rem; font-weight: 700; color: var(--intro-text);
+  opacity: 0; animation: introFadeUp 0.4s ease 1.1s forwards;
+  margin-top: 0.6rem;
+}
+@keyframes introReveal { to { opacity: 1; transform: scale(1); } }
+@keyframes introFadeUp { to { opacity: 1; } }
+
+/* ── Ambient ── */
+.ambient-orb { position: fixed; border-radius: 50%; pointer-events: none; filter: blur(90px); z-index: 0; }
+.orb-1 { width: 480px; height: 480px; background: var(--orb-1); top: -6%; right: -5%; animation: orbDrift1 24s ease-in-out infinite; }
+.orb-2 { width: 400px; height: 400px; background: var(--orb-2); bottom: -4%; left: -3%; animation: orbDrift2 28s ease-in-out infinite; }
+@keyframes orbDrift1 { 0%,100%{transform:translate(0,0)} 50%{transform:translate(-35px,45px)} }
+@keyframes orbDrift2 { 0%,100%{transform:translate(0,0)} 50%{transform:translate(25px,-35px)} }
+
+/* ── Dashboard ── */
+#dashboard {
+  position: relative; z-index: 1; max-width: 1140px; margin: 0 auto;
+  padding: 2rem 1.5rem 3rem;
+  opacity: 0; transform: translateY(12px);
+  transition: opacity 0.6s ease, transform 0.6s ease;
+}
+#dashboard.visible { opacity: 1; transform: translateY(0); }
+
+/* ── Header ── */
+.dash-header {
+  display: flex; align-items: center; justify-content: space-between;
+  gap: 1.5rem; margin-bottom: 2.5rem; flex-wrap: wrap;
+}
+.header-left { display: flex; align-items: center; gap: 1.2rem; }
+.header-logo-icon { height: 56px; width: auto; display: block; border-radius: 6px; }
+.header-divider { width: 1px; height: 38px; background: var(--glass-border); }
+.header-meta h1 { font-size: 1.05rem; font-weight: 800; line-height: 1.2; margin: 0; letter-spacing: -0.01em; }
+.header-meta .header-sub { font-size: 0.78rem; font-weight: 600; color: var(--text-tertiary); margin: 0; }
+.header-right { text-align: right; }
+.header-client { font-size: 0.82rem; font-weight: 700; color: var(--brand-green); margin: 0; }
+.header-date { font-size: 0.72rem; font-weight: 600; color: var(--text-tertiary); margin: 0.15rem 0 0; }
+.header-website { font-size: 0.68rem; font-weight: 500; color: var(--text-tertiary); margin: 0.1rem 0 0; }
+.header-website a { color: var(--brand-green); text-decoration: none; }
+.header-website a:hover { text-decoration: underline; }
+
+/* ── Sections ── */
+.section-title {
+  font-size: 0.82rem; font-weight: 800; text-transform: uppercase;
+  letter-spacing: 0.08em; color: var(--text-secondary);
+  margin: 2.5rem 0 1.2rem; display: flex; align-items: center; gap: 0.7rem;
+}
+.section-title::before {
+  content: ''; width: 3px; height: 1.1em; border-radius: 2px;
+  background: var(--section-line);
+}
+
+/* ── KPI cards ── */
+.kpi-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 1rem; }
+.kpi-card {
+  background: var(--bg-surface);
+  backdrop-filter: blur(var(--glass-blur)); -webkit-backdrop-filter: blur(var(--glass-blur));
+  border: 1px solid var(--glass-border); border-radius: 16px; padding: 1.4rem 1.3rem;
+  box-shadow: var(--card-shadow);
+  transition: transform 0.35s ease, box-shadow 0.35s ease;
+  position: relative; overflow: hidden;
+  opacity: 0; transform: translateY(20px);
+}
+.kpi-card.revealed { opacity: 1; transform: translateY(0); transition: opacity 0.5s ease, transform 0.5s ease, box-shadow 0.35s ease; }
+.kpi-card:hover { transform: translateY(-3px); box-shadow: var(--card-shadow-hover); }
+.kpi-card::after {
+  content: ''; position: absolute; inset: 0; border-radius: 16px;
+  background: linear-gradient(135deg, rgba(255,255,255,0.05) 0%, transparent 60%);
+  pointer-events: none;
+}
+.kpi-icon {
+  width: 32px; height: 32px; border-radius: 10px;
+  display: flex; align-items: center; justify-content: center;
+  margin-bottom: 0.9rem; font-size: 0.95rem;
+}
+.kpi-icon.green { background: var(--green-glow); }
+.kpi-icon.dark { background: var(--dark-glow); }
+.kpi-value { font-size: 2rem; font-weight: 900; line-height: 1; margin: 0; color: var(--text-primary); }
+.kpi-label { font-size: 0.72rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.05em; color: var(--text-tertiary); margin: 0.5rem 0 0; }
+.kpi-desc { font-size: 0.68rem; font-weight: 500; color: var(--text-tertiary); margin: 0.25rem 0 0; opacity: 0.8; }
+.kpi-delta { font-size: 0.68rem; font-weight: 700; margin-top: 0.5rem; display: flex; align-items: center; gap: 0.3rem; }
+.kpi-delta.up { color: var(--up-color); }
+.kpi-delta.down { color: var(--down-color); }
+.prev-section .kpi-card { opacity: 0; }
+.prev-section .kpi-card.revealed { opacity: var(--prev-card-opacity); }
+
+/* ── Chart ── */
+.chart-section {
+  background: var(--bg-surface);
+  backdrop-filter: blur(var(--glass-blur)); -webkit-backdrop-filter: blur(var(--glass-blur));
+  border: 1px solid var(--glass-border); border-radius: 20px; padding: 1.8rem;
+  box-shadow: var(--card-shadow); margin-top: 1rem;
+  opacity: 0; transform: translateY(20px);
+  transition: opacity 0.6s ease 0.1s, transform 0.6s ease 0.1s;
+}
+.chart-section.revealed { opacity: 1; transform: translateY(0); }
+.chart-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 1.2rem; flex-wrap: wrap; gap: 0.8rem; }
+.chart-title { font-size: 0.92rem; font-weight: 800; margin: 0; }
+.chart-legend { display: flex; gap: 1.2rem; align-items: center; }
+.legend-item { display: flex; align-items: center; gap: 0.4rem; font-size: 0.72rem; font-weight: 600; color: var(--text-secondary); }
+.legend-dot { width: 10px; height: 10px; border-radius: 3px; }
+.legend-dot.current { background: var(--chart-current); }
+.legend-dot.previous { background: var(--chart-previous); }
+.chart-canvas-wrap { position: relative; width: 100%; height: 320px; }
+.chart-canvas-wrap canvas { width: 100%; height: 100%; display: block; }
+
+/* ── Insights ── */
+.insights-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 1rem; }
+.insight-card {
+  background: var(--insight-bg); border: 1px solid var(--glass-border);
+  border-radius: 14px; padding: 1.3rem 1.2rem; position: relative;
+  opacity: 0; transform: translateY(16px);
+}
+.insight-card.revealed { opacity: 1; transform: translateY(0); transition: opacity 0.45s ease, transform 0.45s ease; }
+.insight-num { font-size: 0.68rem; font-weight: 800; color: var(--brand-green); letter-spacing: 0.04em; margin: 0 0 0.35rem; }
+.insight-title { font-size: 0.82rem; font-weight: 800; margin: 0 0 0.4rem; color: var(--text-primary); }
+.insight-body { font-size: 0.75rem; font-weight: 500; color: var(--text-secondary); line-height: 1.55; margin: 0; }
+
+/* ── Footer ── */
+.dash-footer {
+  margin-top: 3rem; padding: 1.5rem 0;
+  border-top: 1px solid var(--glass-border); text-align: center;
+  font-size: 0.68rem; font-weight: 600; color: var(--text-tertiary);
+}
+
+/* ── Responsive ── */
+@media (max-width: 900px) { .kpi-grid { grid-template-columns: repeat(2, 1fr); } }
+@media (max-width: 580px) {
+  #dashboard { padding: 1.2rem 1rem 2rem; }
+  .kpi-grid { grid-template-columns: 1fr 1fr; gap: 0.7rem; }
+  .kpi-value { font-size: 1.6rem; }
+  .kpi-card { padding: 1.1rem 1rem; border-radius: 13px; }
+  .dash-header { flex-direction: column; align-items: flex-start; }
+  .header-right { text-align: left; }
+  .chart-canvas-wrap { height: 260px; }
+}
+@media (max-width: 400px) { .kpi-grid { grid-template-columns: 1fr; } .insights-grid { grid-template-columns: 1fr; } }
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after { animation-duration: 0.01ms !important; transition-duration: 0.01ms !important; }
+  .ambient-orb { display: none; }
+}
+</style>
+</head>
+<body>
+
+<!-- Intro -->
+<div class="intro-overlay" id="intro">
+  <canvas class="intro-canvas" id="introCanvas"></canvas>
+  <div class="intro-logo-wrap">
+    <img id="intro-logo" alt="Talent X" src="">
+    <div class="intro-tagline">Replacing Recruitment</div>
+    <div class="intro-title">Weekly Campaign Performance</div>
+  </div>
+</div>
+
+<!-- Ambient -->
+<div class="ambient-orb orb-1"></div>
+<div class="ambient-orb orb-2"></div>
+
+<!-- Dashboard -->
+<div id="dashboard">
+  <header class="dash-header">
+    <div class="header-left">
+      <img class="header-logo-icon" id="main-logo" alt="Talent X" src="">
+      <div class="header-divider"></div>
+      <div class="header-meta">
+        <h1>Weekly Campaign Performance Report</h1>
+        <p class="header-sub">Maddie Jones</p>
+      </div>
+    </div>
+    <div class="header-right">
+      <p class="header-client">Talent X</p>
+      <p class="header-date" id="currentDate"></p>
+      <p class="header-website"><a href="https://www.talentx.com.au/" target="_blank" rel="noopener">talentx.com.au</a></p>
+    </div>
+  </header>
+
+  <div class="section-title">Current Week Performance</div>
+  <div class="kpi-grid" id="currentKPIs"></div>
+
+  <div class="section-title">Previous Week Performance</div>
+  <div class="kpi-grid prev-section" id="prevKPIs"></div>
+
+  <div class="section-title">Weekly Performance Comparison</div>
+  <div class="chart-section" id="chartSection">
+    <div class="chart-header">
+      <h2 class="chart-title">Current Week vs Previous Week</h2>
+      <div class="chart-legend">
+        <span class="legend-item"><span class="legend-dot current"></span> Current Week</span>
+        <span class="legend-item"><span class="legend-dot previous"></span> Previous Week</span>
+      </div>
+    </div>
+    <div class="chart-canvas-wrap"><canvas id="compChart"></canvas></div>
+  </div>
+
+  <div class="section-title">Campaign Insights</div>
+  <div class="insights-grid" id="insightsGrid"></div>
+
+  <footer class="dash-footer">
+    &copy; <span id="footerYear"></span> Talent X &middot; Weekly Campaign Performance Dashboard
+  </footer>
+</div>
+
+<script>
+const LOGO_B64 = "data:image/png;base64,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";
+document.getElementById('intro-logo').src = LOGO_B64;
+document.getElementById('main-logo').src = LOGO_B64;
+
+// ── Data ──
+const currentWeek = { callsTaken: 237, callsConnected: 51, callbacks: 10, appointments: 4 };
+const previousWeek = { callsTaken: 219, callsConnected: 48, callbacks: 1, appointments: 5 };
+
+function pct(n, d) { return d === 0 ? 0 : parseFloat(((n / d) * 100).toFixed(2)); }
+function delta(cur, prev) { return prev === 0 ? 100 : parseFloat((((cur - prev) / prev) * 100).toFixed(1)); }
+function fmtDelta(v) { return (v >= 0 ? '↑' : '↓') + ' ' + Math.abs(v).toFixed(1) + '%'; }
+
+const curConnPct = pct(currentWeek.callsConnected, currentWeek.callsTaken);
+const prevConnPct = pct(previousWeek.callsConnected, previousWeek.callsTaken);
+const curApptPct = pct(currentWeek.appointments, currentWeek.callsConnected);
+const prevApptPct = pct(previousWeek.appointments, previousWeek.callsConnected);
+
+// ── Date ──
+const now = new Date();
+document.getElementById('currentDate').textContent = now.toLocaleDateString('en-AU', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' });
+document.getElementById('footerYear').textContent = now.getFullYear();
+
+// ── KPIs ──
+const kpiDefs = [
+  { key: 'callsTaken', label: 'Total Calls Taken', desc: 'Total outbound dials placed this period', icon: '📞', iconClass: 'green' },
+  { key: 'callsConnected', label: 'Total Calls Connected', desc: 'Live conversations with prospects', icon: '🔗', iconClass: 'dark' },
+  { key: 'connPct', label: 'Connected Calls %', desc: 'Proportion of calls resulting in conversations', icon: '📊', iconClass: 'green' },
+  { key: 'callbacks', label: 'Total Callbacks', desc: 'Prospects requesting a follow-up call', icon: '🔄', iconClass: 'dark' },
+  { key: 'appointments', label: 'Total Appointments', desc: 'Confirmed meetings booked', icon: '📅', iconClass: 'green' },
+  { key: 'apptPct', label: 'Appointment %', desc: 'Conversion rate from connections to meetings', icon: '🎯', iconClass: 'dark' },
+];
+
+function getVal(data, key, cp, ap) {
+  if (key === 'connPct') return cp;
+  if (key === 'apptPct') return ap;
+  return data[key];
+}
+
+function buildKPIs(container, data, cp, ap, otherData, ocp, oap) {
+  container.innerHTML = '';
+  kpiDefs.forEach((def, i) => {
+    const val = getVal(data, def.key, cp, ap);
+    const otherVal = getVal(otherData, def.key, ocp, oap);
+    const d = delta(val, otherVal);
+    const isUp = d >= 0;
+    const isPct = def.key === 'connPct' || def.key === 'apptPct';
+    const card = document.createElement('div');
+    card.className = 'kpi-card';
+    card.style.transitionDelay = (i * 0.08) + 's';
+    card.innerHTML = `
+      <div class="kpi-icon ${def.iconClass}">${def.icon}</div>
+      <p class="kpi-value">${isPct ? val.toFixed(2) + '%' : val.toLocaleString()}</p>
+      <p class="kpi-label">${def.label}</p>
+      <p class="kpi-desc">${def.desc}</p>
+      <div class="kpi-delta ${isUp ? 'up' : 'down'}">${fmtDelta(d)} vs ${container.id === 'currentKPIs' ? 'Previous' : 'Current'} Week</div>
+    `;
+    container.appendChild(card);
+  });
+}
+
+buildKPIs(document.getElementById('currentKPIs'), currentWeek, curConnPct, curApptPct, previousWeek, prevConnPct, prevApptPct);
+buildKPIs(document.getElementById('prevKPIs'), previousWeek, prevConnPct, prevApptPct, currentWeek, curConnPct, curApptPct);
+
+// ── Insights ──
+const insights = [
+  { num: '01', title: 'Strong Outreach Activity', body: `With ${currentWeek.callsTaken.toLocaleString()} calls placed this week — an ${delta(currentWeek.callsTaken, previousWeek.callsTaken).toFixed(1)}% increase from last week's ${previousWeek.callsTaken} — the campaign maintained consistent outreach activity, creating a strong foundation for continued prospect engagement.` },
+  { num: '02', title: 'Healthy Connection Rate', body: `The campaign achieved a ${curConnPct.toFixed(2)}% connection rate this week with ${currentWeek.callsConnected} live conversations, demonstrating effective reach across the prospecting pool and maintaining consistency with last week's ${prevConnPct.toFixed(2)}%.` },
+  { num: '03', title: 'Positive Appointment Momentum', body: `${currentWeek.appointments} confirmed appointments were booked this week, representing a ${curApptPct.toFixed(2)}% conversion rate from connected calls. Appointment generation remained active, indicating continued interest from qualified prospects.` },
+  { num: '04', title: 'Follow-Up Opportunity', body: `Callback activity surged to ${currentWeek.callbacks} this week, up significantly from ${previousWeek.callbacks} last week. This provides a strong pipeline of follow-up opportunities to convert existing prospect interest into future conversations and meetings.` },
+  { num: '05', title: 'Continued Campaign Momentum', body: `Overall performance shows positive campaign momentum across key outreach metrics. The combination of increased call volume and strong callback generation provides a solid base for further optimisation and pipeline growth.` },
+];
+const insightsGrid = document.getElementById('insightsGrid');
+insights.forEach((ins, i) => {
+  const card = document.createElement('div');
+  card.className = 'insight-card';
+  card.style.transitionDelay = (i * 0.07) + 's';
+  card.innerHTML = `<p class="insight-num">${ins.num}</p><h3 class="insight-title">${ins.title}</h3><p class="insight-body">${ins.body}</p>`;
+  insightsGrid.appendChild(card);
+});
+
+// ── Canvas chart ──
+const canvas = document.getElementById('compChart');
+const ctx = canvas.getContext('2d');
+const chartData = [
+  { label: 'Calls Taken', cur: currentWeek.callsTaken, prev: previousWeek.callsTaken },
+  { label: 'Calls Connected', cur: currentWeek.callsConnected, prev: previousWeek.callsConnected },
+  { label: 'Callbacks', cur: currentWeek.callbacks, prev: previousWeek.callbacks },
+  { label: 'Appointments', cur: currentWeek.appointments, prev: previousWeek.appointments },
+];
+
+function getCSS(prop) { return getComputedStyle(document.documentElement).getPropertyValue(prop).trim(); }
+
+function drawChart(time) {
+  const dpr = window.devicePixelRatio || 1;
+  const rect = canvas.getBoundingClientRect();
+  canvas.width = rect.width * dpr; canvas.height = rect.height * dpr;
+  ctx.scale(dpr, dpr);
+  const W = rect.width, H = rect.height;
+  const colCur = getCSS('--chart-current'), colPrev = getCSS('--chart-previous');
+  const colText = getCSS('--text-secondary'), colMuted = getCSS('--text-tertiary'), colGrid = getCSS('--glass-border');
+  ctx.clearRect(0, 0, W, H);
+
+  const padL = 62, padR = 20, padT = 20, padB = 52;
+  const plotW = W - padL - padR, plotH = H - padT - padB;
+  const maxVal = Math.max(...chartData.map(d => Math.max(d.cur, d.prev)));
+  const niceMax = Math.ceil(maxVal / 50) * 50;
+
+  // Grid
+  const gridSteps = 5;
+  ctx.strokeStyle = colGrid; ctx.lineWidth = 1;
+  ctx.fillStyle = colMuted; ctx.font = '500 11px Nunito, sans-serif'; ctx.textAlign = 'right';
+  for (let i = 0; i <= gridSteps; i++) {
+    const y = padT + plotH - (i / gridSteps) * plotH;
+    ctx.beginPath(); ctx.moveTo(padL, y); ctx.lineTo(padL + plotW, y); ctx.stroke();
+    ctx.fillText(Math.round((i / gridSteps) * niceMax).toLocaleString(), padL - 8, y + 4);
+  }
+
+  // Bars
+  const groupW = plotW / chartData.length;
+  const barW = Math.min(24, groupW * 0.28);
+  const gap = 6;
+
+  chartData.forEach((d, i) => {
+    const cx = padL + groupW * i + groupW / 2;
+    const floatOff = Math.sin(time / 1200 + i * 1.3) * 2.5;
+
+    const prevH = Math.max(1, (d.prev / niceMax) * plotH);
+    const prevX = cx - barW - gap / 2;
+    const prevY = padT + plotH - prevH + floatOff;
+    ctx.fillStyle = colPrev;
+    roundedBar(ctx, prevX, prevY, barW, prevH - floatOff, 4); ctx.fill();
+
+    const curH = Math.max(1, (d.cur / niceMax) * plotH);
+    const curX = cx + gap / 2;
+    const curY = padT + plotH - curH + floatOff * 0.7;
+    ctx.fillStyle = colCur;
+    roundedBar(ctx, curX, curY, barW, curH - floatOff * 0.7, 4); ctx.fill();
+
+    // Value on current bar
+    ctx.fillStyle = colText; ctx.font = '700 11px Nunito, sans-serif'; ctx.textAlign = 'center';
+    ctx.fillText(d.cur.toLocaleString(), curX + barW / 2, curY - 6);
+
+    // X labels
+    ctx.fillStyle = colMuted; ctx.font = '600 11px Nunito, sans-serif';
+    d.label.split(' ').forEach((line, li) => { ctx.fillText(line, cx, padT + plotH + 18 + li * 14); });
+  });
+
+  // Floating particles
+  for (let p = 0; p < 8; p++) {
+    const px = padL + (Math.sin(time / 3000 + p * 2.1) * 0.5 + 0.5) * plotW;
+    const py = padT + (Math.cos(time / 2500 + p * 1.7) * 0.5 + 0.5) * plotH;
+    const pr = 2 + Math.sin(time / 1800 + p) * 1;
+    ctx.beginPath(); ctx.arc(px, py, pr, 0, Math.PI * 2);
+    ctx.fillStyle = p % 2 === 0 ? colCur : colPrev;
+    ctx.globalAlpha = 0.12; ctx.fill(); ctx.globalAlpha = 1;
+  }
+  requestAnimationFrame(drawChart);
+}
+
+function roundedBar(ctx, x, y, w, h, r) {
+  if (h < 1) h = 1; r = Math.min(r, w / 2, h / 2);
+  ctx.beginPath(); ctx.moveTo(x, y + h); ctx.lineTo(x, y + r);
+  ctx.arcTo(x, y, x + r, y, r); ctx.lineTo(x + w - r, y);
+  ctx.arcTo(x + w, y, x + w, y + r, r); ctx.lineTo(x + w, y + h); ctx.closePath();
+}
+
+// ── Scroll reveal ──
+const observer = new IntersectionObserver((entries) => {
+  entries.forEach(e => { if (e.isIntersecting) { e.target.classList.add('revealed'); observer.unobserve(e.target); } });
+}, { threshold: 0.15 });
+function observeAll() {
+  document.querySelectorAll('.kpi-card, .insight-card, .chart-section').forEach(el => observer.observe(el));
+}
+
+// ── Intro (talent/people network animation) ──
+function runIntro() {
+  const ic = document.getElementById('introCanvas');
+  const ictx = ic.getContext('2d');
+  const dpr = window.devicePixelRatio || 1;
+  ic.width = window.innerWidth * dpr; ic.height = window.innerHeight * dpr;
+  ictx.scale(dpr, dpr);
+  const W = window.innerWidth, H = window.innerHeight;
+
+  // People nodes — talent network
+  const nodes = [];
+  for (let i = 0; i < 20; i++) {
+    nodes.push({ x: Math.random() * W, y: Math.random() * H, vx: (Math.random() - 0.5) * 1.0, vy: (Math.random() - 0.5) * 1.0, r: 3 + Math.random() * 5 });
+  }
+  let start = null;
+  function frame(ts) {
+    if (!start) start = ts;
+    ictx.clearRect(0, 0, W, H);
+    nodes.forEach(n => {
+      n.x += n.vx; n.y += n.vy;
+      if (n.x < 0 || n.x > W) n.vx *= -1;
+      if (n.y < 0 || n.y > H) n.vy *= -1;
+    });
+    // Connections
+    ictx.strokeStyle = 'rgba(74,138,90,0.10)'; ictx.lineWidth = 1;
+    for (let i = 0; i < nodes.length; i++) {
+      for (let j = i + 1; j < nodes.length; j++) {
+        const dx = nodes[i].x - nodes[j].x, dy = nodes[i].y - nodes[j].y;
+        const dist = Math.sqrt(dx * dx + dy * dy);
+        if (dist < 160) {
+          ictx.globalAlpha = (1 - dist / 160) * 0.35;
+          ictx.beginPath(); ictx.moveTo(nodes[i].x, nodes[i].y); ictx.lineTo(nodes[j].x, nodes[j].y); ictx.stroke();
+        }
+      }
+    }
+    ictx.globalAlpha = 1;
+    nodes.forEach(n => {
+      ictx.beginPath(); ictx.arc(n.x, n.y, n.r, 0, Math.PI * 2);
+      ictx.fillStyle = 'rgba(74,138,90,0.22)'; ictx.fill();
+    });
+    if (ts - start < 2200) requestAnimationFrame(frame);
+  }
+  requestAnimationFrame(frame);
+
+  setTimeout(() => {
+    document.getElementById('intro').classList.add('fade-out');
+    document.getElementById('dashboard').classList.add('visible');
+    observeAll(); drawChart(0);
+    setTimeout(() => { document.getElementById('intro').classList.add('hidden'); }, 600);
+  }, 2000);
+}
+
+// ── Init ──
+if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
+  document.getElementById('intro').classList.add('hidden');
+  document.getElementById('dashboard').classList.add('visible');
+  document.querySelectorAll('.kpi-card, .insight-card, .chart-section').forEach(el => el.classList.add('revealed'));
+  drawChart(0);
+} else { runIntro(); }
+</script>
+</body>
+</html>
