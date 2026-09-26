@@ -211,8 +211,7 @@ body {
 .kpi-delta { font-size: 0.68rem; font-weight: 700; margin-top: 0.5rem; display: flex; align-items: center; gap: 0.3rem; }
 .kpi-delta.up { color: var(--up-color); }
 .kpi-delta.down { color: var(--down-color); }
-.prev-section .kpi-card { opacity: 0; }
-.prev-section .kpi-card.revealed { opacity: var(--prev-card-opacity); }
+.prev-section .kpi-card.revealed { opacity: 1; }
 
 /* ── Chart ── */
 .chart-section {
@@ -337,8 +336,8 @@ document.getElementById('intro-logo').src = LOGO_B64;
 document.getElementById('main-logo').src = LOGO_B64;
 
 // ── Data ──
-const currentWeek = { callsTaken: 229, callsConnected: 47, callbacks: 0, appointments: 5 };
-const previousWeek = { callsTaken: 267, callsConnected: 61, callbacks: 5, appointments: 4 };
+const currentWeek = { callsTaken: 217, callsConnected: 64, callbacks: 6, appointments: 4 };
+const previousWeek = { callsTaken: 229, callsConnected: 47, callbacks: 0, appointments: 5 };
 
 function pct(n, d) { return d === 0 ? 0 : parseFloat(((n / d) * 100).toFixed(2)); }
 function delta(cur, prev) { return prev === 0 ? 100 : parseFloat((((cur - prev) / prev) * 100).toFixed(1)); }
