@@ -37,6 +37,7 @@
   --insight-bg: rgba(74,138,90,0.035);
   --footer-bg: rgba(74,138,90,0.02);
   --prev-card-opacity: 0.70;
+  --shine: rgba(255,255,255,0.60);
 }
 
 @media (prefers-color-scheme: dark) {
@@ -68,6 +69,7 @@
     --insight-bg: rgba(94,168,110,0.04);
     --footer-bg: rgba(255,255,255,0.02);
     --prev-card-opacity: 0.60;
+    --shine: rgba(255,255,255,0.07);
   }
 }
 :root[data-theme="dark"] {
@@ -98,31 +100,59 @@
   --insight-bg: rgba(94,168,110,0.04);
   --footer-bg: rgba(255,255,255,0.02);
   --prev-card-opacity: 0.60;
+  --shine: rgba(255,255,255,0.07);
 }
 
 *, *::before, *::after { box-sizing: border-box; }
 body {
   font-family: 'Nunito', system-ui, -apple-system, sans-serif;
-  background: var(--bg-deep); color: var(--text-primary);
-  margin: 0; padding: 0; min-height: 100vh; overflow-x: hidden;
+  background: var(--bg-deep);
+  color: var(--text-primary);
+  margin: 0; padding: 0;
+  min-height: 100vh;
+  overflow-x: hidden;
 }
 
-/* ── Intro ── */
+/* ── Shared live keyframes ── */
+@keyframes lineFlow { 0% { background-position: 200% 0; } 100% { background-position: 0 0; } }
+@keyframes edgeRun { 0% { transform: translateX(-100%); } 100% { transform: translateX(250%); } }
+@keyframes ripple { 0% { transform: scale(0.5); opacity: 0.9; } 100% { transform: scale(1.7); opacity: 0; } }
+@keyframes dotPulse { 0%,100% { transform: scale(1); opacity: 1; } 50% { transform: scale(1.7); opacity: 0.35; } }
+@keyframes logoFloat { 0%,100% { transform: translateY(0); } 50% { transform: translateY(-4px); } }
+
+/* ── Intro overlay ── */
 .intro-overlay {
   position: fixed; inset: 0; z-index: 9999;
   background: var(--intro-bg);
-  display: flex; flex-direction: column; align-items: center; justify-content: center;
+  display: flex; flex-direction: column;
+  align-items: center; justify-content: center;
   transition: opacity 0.5s ease;
 }
 .intro-overlay.fade-out { opacity: 0; pointer-events: none; }
 .intro-overlay.hidden { display: none; }
 .intro-canvas { position: absolute; inset: 0; width: 100%; height: 100%; }
+.intro-rings { position: absolute; left: 50%; top: 50%; width: 0; height: 0; z-index: 1; }
+.intro-rings span {
+  position: absolute; left: -90px; top: -90px; width: 180px; height: 180px;
+  border-radius: 50%; border: 1px solid rgba(74,138,90,0.5);
+  opacity: 0; animation: introRing 2.4s ease-out infinite;
+}
+.intro-rings span:nth-child(2) { animation-delay: 0.6s; }
+.intro-rings span:nth-child(3) { animation-delay: 1.2s; }
+@keyframes introRing { 0% { transform: scale(0.5); opacity: 0.7; } 100% { transform: scale(2.8); opacity: 0; } }
 .intro-logo-wrap {
   position: relative; z-index: 2; text-align: center;
   opacity: 0; transform: scale(0.92);
   animation: introReveal 0.6s ease 0.5s forwards;
 }
-.intro-logo-wrap img { height: 80px; width: auto; margin-bottom: 0.5rem; }
+.intro-logo-wrap img {
+  height: 80px; width: auto; margin-bottom: 0.5rem;
+  animation: introPulse 1.6s ease-in-out 1.1s infinite;
+}
+.intro-logo-wrap .logo-fallback {
+  display: block; font-size: 2.4rem; color: #fff; margin-bottom: 0.6rem;
+  animation: introPulse 1.6s ease-in-out 1.1s infinite;
+}
 .intro-tagline {
   font-size: 0.72rem; font-weight: 600; color: rgba(232,234,230,0.45);
   letter-spacing: 0.22em; text-transform: uppercase;
@@ -133,19 +163,41 @@ body {
   opacity: 0; animation: introFadeUp 0.4s ease 1.1s forwards;
   margin-top: 0.6rem;
 }
+.intro-bar {
+  width: 160px; height: 3px; border-radius: 3px; overflow: hidden;
+  background: rgba(232,230,226,0.12); margin: 1.1rem auto 0;
+}
+.intro-bar span {
+  display: block; width: 100%; height: 100%;
+  transform-origin: left; transform: scaleX(0);
+  background: linear-gradient(90deg, #4A8A5A, #72C082);
+  animation: introLoad 1.9s cubic-bezier(0.4,0,0.2,1) 0.1s forwards;
+}
 @keyframes introReveal { to { opacity: 1; transform: scale(1); } }
 @keyframes introFadeUp { to { opacity: 1; } }
+@keyframes introPulse { 0%,100% { transform: scale(1); } 50% { transform: scale(1.05); } }
+@keyframes introLoad { to { transform: scaleX(1); } }
 
-/* ── Ambient ── */
-.ambient-orb { position: fixed; border-radius: 50%; pointer-events: none; filter: blur(90px); z-index: 0; }
+/* ── Live background ── */
+.bg-canvas {
+  position: fixed; inset: 0; width: 100%; height: 100%;
+  z-index: 0; pointer-events: none;
+}
+.ambient-orb {
+  position: fixed; border-radius: 50%; pointer-events: none;
+  filter: blur(90px); z-index: 0;
+}
 .orb-1 { width: 480px; height: 480px; background: var(--orb-1); top: -6%; right: -5%; animation: orbDrift1 24s ease-in-out infinite; }
 .orb-2 { width: 400px; height: 400px; background: var(--orb-2); bottom: -4%; left: -3%; animation: orbDrift2 28s ease-in-out infinite; }
-@keyframes orbDrift1 { 0%,100%{transform:translate(0,0)} 50%{transform:translate(-35px,45px)} }
-@keyframes orbDrift2 { 0%,100%{transform:translate(0,0)} 50%{transform:translate(25px,-35px)} }
+.orb-3 { width: 320px; height: 320px; background: var(--orb-2); top: 40%; left: 52%; animation: orbDrift3 30s ease-in-out infinite; }
+@keyframes orbDrift1 { 0%,100%{transform:translate(0,0) scale(1)} 50%{transform:translate(-40px,50px) scale(1.12)} }
+@keyframes orbDrift2 { 0%,100%{transform:translate(0,0) scale(1)} 50%{transform:translate(30px,-40px) scale(1.1)} }
+@keyframes orbDrift3 { 0%,100%{transform:translate(0,0) scale(1)} 50%{transform:translate(-60px,-30px) scale(0.88)} }
 
-/* ── Dashboard ── */
+/* ── Dashboard shell ── */
 #dashboard {
-  position: relative; z-index: 1; max-width: 1140px; margin: 0 auto;
+  position: relative; z-index: 1;
+  max-width: 1140px; margin: 0 auto;
   padding: 2rem 1.5rem 3rem;
   opacity: 0; transform: translateY(12px);
   transition: opacity 0.6s ease, transform 0.6s ease;
@@ -154,106 +206,320 @@ body {
 
 /* ── Header ── */
 .dash-header {
+  position: relative;
   display: flex; align-items: center; justify-content: space-between;
   gap: 1.5rem; margin-bottom: 2.5rem; flex-wrap: wrap;
 }
+.dash-header::after {
+  content: ''; position: absolute; left: 0; right: 0; bottom: -1.1rem;
+  height: 2px; border-radius: 2px; opacity: 0.6;
+  background: linear-gradient(90deg, transparent 0%, var(--brand-green) 25%, var(--chart-previous) 50%, var(--brand-green) 75%, transparent 100%);
+  background-size: 200% 100%;
+  animation: lineFlow 6s linear infinite;
+}
 .header-left { display: flex; align-items: center; gap: 1.2rem; }
-.header-logo-icon { height: 56px; width: auto; display: block; border-radius: 6px; }
+.header-logo-icon { height: 56px; width: auto; display: block; border-radius: 6px; animation: logoFloat 5s ease-in-out infinite; }
+.logo-fallback {
+  font-weight: 900; font-size: 1.5rem; letter-spacing: 0.14em; color: var(--brand-green);
+  display: inline-block; animation: logoFloat 5s ease-in-out infinite;
+}
 .header-divider { width: 1px; height: 38px; background: var(--glass-border); }
-.header-meta h1 { font-size: 1.05rem; font-weight: 800; line-height: 1.2; margin: 0; letter-spacing: -0.01em; }
-.header-meta .header-sub { font-size: 0.78rem; font-weight: 600; color: var(--text-tertiary); margin: 0; }
+.header-meta h1 {
+  font-size: 1.05rem; font-weight: 800; line-height: 1.2;
+  margin: 0; letter-spacing: -0.01em;
+}
+.header-meta .header-sub {
+  font-size: 0.78rem; font-weight: 600; color: var(--text-tertiary);
+  margin: 0;
+}
 .header-right { text-align: right; }
-.header-client { font-size: 0.82rem; font-weight: 700; color: var(--brand-green); margin: 0; }
-.header-date { font-size: 0.72rem; font-weight: 600; color: var(--text-tertiary); margin: 0.15rem 0 0; }
-.header-website { font-size: 0.68rem; font-weight: 500; color: var(--text-tertiary); margin: 0.1rem 0 0; }
+.header-client {
+  font-size: 0.82rem; font-weight: 700; color: var(--brand-green);
+  margin: 0;
+}
+.header-date {
+  font-size: 0.72rem; font-weight: 600; color: var(--text-tertiary);
+  margin: 0.15rem 0 0;
+}
+.header-clock {
+  display: flex; align-items: center; justify-content: flex-end; gap: 0.45rem;
+  font-size: 0.7rem; font-weight: 700; color: var(--text-secondary);
+  margin: 0.25rem 0 0; font-variant-numeric: tabular-nums;
+}
+.live-dot { width: 7px; height: 7px; border-radius: 50%; background: var(--up-color); position: relative; flex: none; }
+.live-dot::after {
+  content: ''; position: absolute; inset: -4px; border-radius: 50%;
+  border: 1.5px solid var(--up-color);
+  animation: ripple 1.8s ease-out infinite;
+}
+.header-website {
+  font-size: 0.68rem; font-weight: 500; color: var(--text-tertiary);
+  margin: 0.1rem 0 0;
+}
 .header-website a { color: var(--brand-green); text-decoration: none; }
 .header-website a:hover { text-decoration: underline; }
 
-/* ── Sections ── */
+/* ── Section titles ── */
 .section-title {
   font-size: 0.82rem; font-weight: 800; text-transform: uppercase;
   letter-spacing: 0.08em; color: var(--text-secondary);
   margin: 2.5rem 0 1.2rem; display: flex; align-items: center; gap: 0.7rem;
+  opacity: 0; transform: translateX(-12px);
+  transition: opacity 0.5s ease, transform 0.5s ease;
 }
+.section-title.revealed { opacity: 1; transform: none; }
 .section-title::before {
   content: ''; width: 3px; height: 1.1em; border-radius: 2px;
   background: var(--section-line);
+  animation: barPulse 2.4s ease-in-out infinite;
 }
+.section-title::after {
+  content: ''; flex: 1; height: 1px; opacity: 0.65;
+  background: linear-gradient(90deg, var(--glass-border) 0%, var(--brand-green) 50%, var(--glass-border) 100%);
+  background-size: 200% 100%;
+  animation: lineFlow 5s linear infinite;
+  -webkit-mask-image: linear-gradient(90deg, #000, transparent);
+  mask-image: linear-gradient(90deg, #000, transparent);
+}
+@keyframes barPulse { 0%,100% { transform: scaleY(1); opacity: 1; } 50% { transform: scaleY(0.55); opacity: 0.6; } }
 
 /* ── KPI cards ── */
-.kpi-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 1rem; }
+.kpi-grid {
+  display: grid; grid-template-columns: repeat(3, 1fr);
+  gap: 1rem;
+}
 .kpi-card {
   background: var(--bg-surface);
-  backdrop-filter: blur(var(--glass-blur)); -webkit-backdrop-filter: blur(var(--glass-blur));
-  border: 1px solid var(--glass-border); border-radius: 16px; padding: 1.4rem 1.3rem;
+  backdrop-filter: blur(var(--glass-blur));
+  -webkit-backdrop-filter: blur(var(--glass-blur));
+  border: 1px solid var(--glass-border);
+  border-radius: 16px; padding: 1.4rem 1.3rem;
   box-shadow: var(--card-shadow);
   transition: transform 0.35s ease, box-shadow 0.35s ease;
   position: relative; overflow: hidden;
   opacity: 0; transform: translateY(20px);
 }
 .kpi-card.revealed { opacity: 1; transform: translateY(0); transition: opacity 0.5s ease, transform 0.5s ease, box-shadow 0.35s ease; }
-.kpi-card:hover { transform: translateY(-3px); box-shadow: var(--card-shadow-hover); }
-.kpi-card::after {
+.kpi-card.revealed:hover {
+  transform: perspective(900px) rotateX(var(--rx, 0deg)) rotateY(var(--ry, 0deg)) translateY(-4px);
+  box-shadow: var(--card-shadow-hover);
+}
+.kpi-card.revealed.tilting { transition: opacity 0.5s ease, transform 0.12s ease-out, box-shadow 0.35s ease; }
+.kpi-card::before {
   content: ''; position: absolute; inset: 0; border-radius: 16px;
-  background: linear-gradient(135deg, rgba(255,255,255,0.05) 0%, transparent 60%);
+  background: radial-gradient(220px circle at var(--mx, 50%) var(--my, 50%), var(--green-glow), transparent 70%);
+  opacity: 0; transition: opacity 0.3s ease; pointer-events: none;
+}
+.kpi-card:hover::before { opacity: 0.55; }
+.kpi-card::after {
+  content: ''; position: absolute; inset: 0;
+  border-radius: 16px;
+  background: linear-gradient(135deg, rgba(255,255,255,0.06) 0%, transparent 60%);
   pointer-events: none;
 }
+.kpi-shine {
+  position: absolute; top: 0; bottom: 0; left: 0; width: 45%;
+  background: linear-gradient(100deg, transparent, var(--shine), transparent);
+  transform: translateX(-120%) skewX(-18deg);
+  animation: shineSweep 6s ease-in-out infinite;
+  animation-delay: var(--d, 0s);
+  pointer-events: none;
+}
+@keyframes shineSweep {
+  0% { transform: translateX(-120%) skewX(-18deg); }
+  35%,100% { transform: translateX(340%) skewX(-18deg); }
+}
+.kpi-top { display: flex; align-items: flex-start; justify-content: space-between; margin-bottom: 0.9rem; position: relative; }
 .kpi-icon {
   width: 32px; height: 32px; border-radius: 10px;
   display: flex; align-items: center; justify-content: center;
-  margin-bottom: 0.9rem; font-size: 0.95rem;
+  font-size: 0.95rem; position: relative;
 }
-.kpi-icon.green { background: var(--green-glow); }
-.kpi-icon.dark { background: var(--dark-glow); }
-.kpi-value { font-size: 2rem; font-weight: 900; line-height: 1; margin: 0; color: var(--text-primary); }
-.kpi-label { font-size: 0.72rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.05em; color: var(--text-tertiary); margin: 0.5rem 0 0; }
-.kpi-desc { font-size: 0.68rem; font-weight: 500; color: var(--text-tertiary); margin: 0.25rem 0 0; opacity: 0.8; }
-.kpi-delta { font-size: 0.68rem; font-weight: 700; margin-top: 0.5rem; display: flex; align-items: center; gap: 0.3rem; }
+.kpi-icon.green { background: var(--green-glow); color: var(--brand-green); }
+.kpi-icon.dark { background: var(--dark-glow); color: var(--brand-dark); }
+.kpi-icon::after {
+  content: ''; position: absolute; inset: 0; border-radius: 10px;
+  border: 1.5px solid currentColor; opacity: 0;
+  animation: iconRipple 2.8s ease-out infinite;
+  animation-delay: var(--d, 0s);
+}
+@keyframes iconRipple { 0% { transform: scale(1); opacity: 0.45; } 70%,100% { transform: scale(1.6); opacity: 0; } }
+.kpi-emoji { display: inline-block; line-height: 1; }
+.anim-ring .kpi-emoji { animation: icoRing 2.6s ease-in-out infinite; transform-origin: 50% 60%; }
+.anim-link .kpi-emoji { animation: icoPulse 2.2s ease-in-out infinite; }
+.anim-bars .kpi-emoji { animation: icoBounce 1.8s ease-in-out infinite; }
+.anim-spin .kpi-emoji { animation: icoSpin 3.6s linear infinite; }
+.anim-flip .kpi-emoji { animation: icoFlip 3.4s ease-in-out infinite; }
+.anim-target .kpi-emoji { animation: icoTarget 2s ease-in-out infinite; }
+@keyframes icoRing {
+  0%,40%,100% { transform: rotate(0); }
+  5% { transform: rotate(-16deg); } 10% { transform: rotate(14deg); }
+  15% { transform: rotate(-12deg); } 20% { transform: rotate(10deg); }
+  25% { transform: rotate(-6deg); } 30% { transform: rotate(4deg); }
+}
+@keyframes icoPulse { 0%,100% { transform: scale(1); } 50% { transform: scale(1.22); } }
+@keyframes icoBounce { 0%,100% { transform: translateY(0); } 50% { transform: translateY(-3px); } }
+@keyframes icoSpin { to { transform: rotate(360deg); } }
+@keyframes icoFlip { 0%,60%,100% { transform: rotateY(0); } 80% { transform: rotateY(360deg); } }
+@keyframes icoTarget {
+  0%,100% { transform: scale(1) rotate(0); }
+  35% { transform: scale(1.25) rotate(-8deg); }
+  60% { transform: scale(0.95) rotate(4deg); }
+}
+
+/* Live ring gauge (percentage cards) */
+.kpi-ring { width: 46px; height: 46px; flex: none; overflow: visible; }
+.kpi-ring circle { fill: none; }
+.kpi-ring .ring-track { stroke: var(--glass-border); stroke-width: 5; }
+.kpi-ring .ring-fill {
+  stroke-width: 5; stroke-linecap: round;
+  stroke-dasharray: var(--c); stroke-dashoffset: var(--c);
+  transition: stroke-dashoffset 1.6s cubic-bezier(0.22,1,0.36,1) 0.25s;
+}
+.kpi-card.revealed .ring-fill { stroke-dashoffset: var(--off); }
+.kpi-ring.green .ring-fill { stroke: var(--brand-green); }
+.kpi-ring.dark .ring-fill { stroke: var(--brand-dark); }
+.kpi-ring .ring-orbit { transform-origin: 26px 26px; animation: icoSpin 7s linear infinite; }
+.kpi-ring .ring-orbit circle { stroke: none; }
+.kpi-ring.green .ring-orbit circle { fill: var(--brand-green); }
+.kpi-ring.dark .ring-orbit circle { fill: var(--brand-dark); }
+
+.kpi-value {
+  font-size: 2rem; font-weight: 900; line-height: 1;
+  margin: 0; color: var(--text-primary);
+  font-variant-numeric: tabular-nums;
+}
+.kpi-label {
+  font-size: 0.72rem; font-weight: 700; text-transform: uppercase;
+  letter-spacing: 0.05em; color: var(--text-tertiary);
+  margin: 0.5rem 0 0;
+}
+.kpi-desc {
+  font-size: 0.68rem; font-weight: 500; color: var(--text-tertiary);
+  margin: 0.25rem 0 0; opacity: 0.8;
+}
+
+/* Live meter (count cards): value relative to the higher of the two weeks */
+.kpi-meter {
+  height: 4px; border-radius: 4px; overflow: hidden;
+  background: var(--glass-border); margin-top: 0.7rem;
+}
+.kpi-meter-fill {
+  display: block; height: 100%; width: 0; border-radius: 4px;
+  background-size: 200% 100%;
+  animation: lineFlow 2.4s linear infinite;
+  transition: width 1.5s cubic-bezier(0.22,1,0.36,1) 0.2s;
+}
+.kpi-card.revealed .kpi-meter-fill { width: var(--fill); }
+.kpi-meter.green .kpi-meter-fill { background-image: linear-gradient(90deg, var(--brand-green), var(--brand-green-light), var(--brand-green)); }
+.kpi-meter.dark .kpi-meter-fill { background-image: linear-gradient(90deg, var(--brand-dark), var(--text-secondary), var(--brand-dark)); }
+
+.kpi-delta {
+  font-size: 0.68rem; font-weight: 700; margin-top: 0.5rem;
+  display: flex; align-items: center; gap: 0.3rem;
+}
 .kpi-delta.up { color: var(--up-color); }
 .kpi-delta.down { color: var(--down-color); }
+.delta-arrow { display: inline-block; }
+.kpi-delta.up .delta-arrow { animation: arrowUp 1.4s ease-in-out infinite; }
+.kpi-delta.down .delta-arrow { animation: arrowDown 1.4s ease-in-out infinite; }
+@keyframes arrowUp { 0%,100% { transform: translateY(1px); } 50% { transform: translateY(-3px); } }
+@keyframes arrowDown { 0%,100% { transform: translateY(-1px); } 50% { transform: translateY(3px); } }
+
 .prev-section .kpi-card.revealed { opacity: 1; }
 
-/* ── Chart ── */
+/* ── Chart section ── */
 .chart-section {
   background: var(--bg-surface);
-  backdrop-filter: blur(var(--glass-blur)); -webkit-backdrop-filter: blur(var(--glass-blur));
-  border: 1px solid var(--glass-border); border-radius: 20px; padding: 1.8rem;
-  box-shadow: var(--card-shadow); margin-top: 1rem;
+  backdrop-filter: blur(var(--glass-blur));
+  -webkit-backdrop-filter: blur(var(--glass-blur));
+  border: 1px solid var(--glass-border);
+  border-radius: 20px; padding: 1.8rem;
+  box-shadow: var(--card-shadow);
+  margin-top: 1rem;
+  position: relative; overflow: hidden;
   opacity: 0; transform: translateY(20px);
   transition: opacity 0.6s ease 0.1s, transform 0.6s ease 0.1s;
 }
 .chart-section.revealed { opacity: 1; transform: translateY(0); }
+.chart-section::before {
+  content: ''; position: absolute; left: 0; top: 0; height: 2px; width: 40%;
+  background: linear-gradient(90deg, transparent, var(--chart-current), var(--chart-previous), transparent);
+  opacity: 0.7; animation: edgeRun 6s linear infinite;
+}
 .chart-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 1.2rem; flex-wrap: wrap; gap: 0.8rem; }
 .chart-title { font-size: 0.92rem; font-weight: 800; margin: 0; }
 .chart-legend { display: flex; gap: 1.2rem; align-items: center; }
 .legend-item { display: flex; align-items: center; gap: 0.4rem; font-size: 0.72rem; font-weight: 600; color: var(--text-secondary); }
-.legend-dot { width: 10px; height: 10px; border-radius: 3px; }
+.legend-dot { width: 10px; height: 10px; border-radius: 3px; animation: dotPulse 2.2s ease-in-out infinite; }
 .legend-dot.current { background: var(--chart-current); }
-.legend-dot.previous { background: var(--chart-previous); }
+.legend-dot.previous { background: var(--chart-previous); animation-delay: 1.1s; }
 .chart-canvas-wrap { position: relative; width: 100%; height: 320px; }
-.chart-canvas-wrap canvas { width: 100%; height: 100%; display: block; }
+.chart-canvas-wrap canvas { width: 100%; height: 100%; display: block; cursor: crosshair; }
 
-/* ── Insights ── */
-.insights-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 1rem; }
+/* ── Insight cards ── */
+.insights-grid {
+  display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+  gap: 1rem;
+}
 .insight-card {
-  background: var(--insight-bg); border: 1px solid var(--glass-border);
-  border-radius: 14px; padding: 1.3rem 1.2rem; position: relative;
+  background: var(--insight-bg);
+  border: 1px solid var(--glass-border);
+  border-radius: 14px; padding: 1.3rem 1.2rem;
+  position: relative; overflow: hidden;
   opacity: 0; transform: translateY(16px);
 }
-.insight-card.revealed { opacity: 1; transform: translateY(0); transition: opacity 0.45s ease, transform 0.45s ease; }
-.insight-num { font-size: 0.68rem; font-weight: 800; color: var(--brand-green); letter-spacing: 0.04em; margin: 0 0 0.35rem; }
-.insight-title { font-size: 0.82rem; font-weight: 800; margin: 0 0 0.4rem; color: var(--text-primary); }
-.insight-body { font-size: 0.75rem; font-weight: 500; color: var(--text-secondary); line-height: 1.55; margin: 0; }
+.insight-card.revealed { opacity: 1; transform: translateY(0); transition: opacity 0.45s ease, transform 0.45s ease, box-shadow 0.35s ease; }
+.insight-card.revealed:hover { transform: translateY(-3px); box-shadow: var(--card-shadow); }
+.insight-card::before {
+  content: ''; position: absolute; left: 0; top: 0; height: 2px; width: 40%;
+  background: linear-gradient(90deg, transparent, var(--brand-green), transparent);
+  opacity: 0.55; animation: edgeRun 5s linear infinite; animation-delay: var(--d, 0s);
+}
+.insight-bar {
+  position: absolute; left: 0; top: 14%; bottom: 14%; width: 3px;
+  border-radius: 0 3px 3px 0;
+  background: linear-gradient(180deg, var(--brand-green), var(--chart-previous));
+  transform: scaleY(0); transform-origin: top;
+  transition: transform 0.7s cubic-bezier(0.22,1,0.36,1) 0.25s;
+}
+.insight-card.revealed .insight-bar { transform: scaleY(1); }
+.insight-num {
+  font-size: 0.68rem; font-weight: 800; color: var(--brand-green);
+  letter-spacing: 0.04em; margin: 0 0 0.35rem;
+  display: flex; align-items: center; gap: 0.45rem;
+}
+.insight-num::before {
+  content: ''; width: 6px; height: 6px; border-radius: 50%;
+  background: var(--brand-green);
+  animation: dotPulse 1.8s ease-in-out infinite; animation-delay: var(--d, 0s);
+}
+.insight-title {
+  font-size: 0.82rem; font-weight: 800; margin: 0 0 0.4rem;
+  color: var(--text-primary);
+}
+.insight-body {
+  font-size: 0.75rem; font-weight: 500; color: var(--text-secondary);
+  line-height: 1.55; margin: 0;
+}
 
 /* ── Footer ── */
 .dash-footer {
   margin-top: 3rem; padding: 1.5rem 0;
-  border-top: 1px solid var(--glass-border); text-align: center;
+  border-top: 1px solid var(--glass-border);
+  text-align: center; position: relative; overflow: hidden;
   font-size: 0.68rem; font-weight: 600; color: var(--text-tertiary);
+}
+.dash-footer::before {
+  content: ''; position: absolute; left: 0; top: 0; height: 1px; width: 40%;
+  background: linear-gradient(90deg, transparent, var(--brand-green), transparent);
+  animation: edgeRun 7s linear infinite;
 }
 
 /* ── Responsive ── */
-@media (max-width: 900px) { .kpi-grid { grid-template-columns: repeat(2, 1fr); } }
+@media (max-width: 900px) {
+  .kpi-grid { grid-template-columns: repeat(2, 1fr); }
+}
 @media (max-width: 580px) {
   #dashboard { padding: 1.2rem 1rem 2rem; }
   .kpi-grid { grid-template-columns: 1fr 1fr; gap: 0.7rem; }
@@ -261,33 +527,49 @@ body {
   .kpi-card { padding: 1.1rem 1rem; border-radius: 13px; }
   .dash-header { flex-direction: column; align-items: flex-start; }
   .header-right { text-align: left; }
+  .header-clock { justify-content: flex-start; }
   .chart-canvas-wrap { height: 260px; }
+  .chart-section { padding: 1.2rem; }
 }
-@media (max-width: 400px) { .kpi-grid { grid-template-columns: 1fr; } .insights-grid { grid-template-columns: 1fr; } }
+@media (max-width: 400px) {
+  .kpi-grid { grid-template-columns: 1fr; }
+  .insights-grid { grid-template-columns: 1fr; }
+}
+
 @media (prefers-reduced-motion: reduce) {
-  *, *::before, *::after { animation-duration: 0.01ms !important; transition-duration: 0.01ms !important; }
-  .ambient-orb { display: none; }
+  *, *::before, *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    transition-delay: 0s !important;
+  }
+  .ambient-orb, .kpi-shine { display: none; }
 }
 </style>
 </head>
 <body>
 
-<!-- Intro -->
+<!-- Intro overlay -->
 <div class="intro-overlay" id="intro">
   <canvas class="intro-canvas" id="introCanvas"></canvas>
+  <div class="intro-rings" aria-hidden="true"><span></span><span></span><span></span></div>
   <div class="intro-logo-wrap">
     <img id="intro-logo" alt="Talent X" src="">
     <div class="intro-tagline">The Anti Recruiter - Recruitment Agency</div>
     <div class="intro-title">Weekly Campaign Performance</div>
+    <div class="intro-bar" aria-hidden="true"><span></span></div>
   </div>
 </div>
 
-<!-- Ambient -->
+<!-- Live background -->
+<canvas class="bg-canvas" id="bgCanvas" aria-hidden="true"></canvas>
 <div class="ambient-orb orb-1"></div>
 <div class="ambient-orb orb-2"></div>
+<div class="ambient-orb orb-3"></div>
 
 <!-- Dashboard -->
 <div id="dashboard">
+  <!-- Header -->
   <header class="dash-header">
     <div class="header-left">
       <img class="header-logo-icon" id="main-logo" alt="Talent X" src="">
@@ -300,16 +582,20 @@ body {
     <div class="header-right">
       <p class="header-client">Talent X</p>
       <p class="header-date" id="currentDate"></p>
+      <p class="header-clock"><span class="live-dot" aria-hidden="true"></span><span id="liveClock"></span></p>
       <p class="header-website"><a href="https://www.talentx.com.au/" target="_blank" rel="noopener">talentx.com.au</a></p>
     </div>
   </header>
 
+  <!-- Current Week -->
   <div class="section-title">Current Week Performance</div>
   <div class="kpi-grid" id="currentKPIs"></div>
 
+  <!-- Previous Week -->
   <div class="section-title">Previous Week Performance</div>
   <div class="kpi-grid prev-section" id="prevKPIs"></div>
 
+  <!-- Chart -->
   <div class="section-title">Weekly Performance Comparison</div>
   <div class="chart-section" id="chartSection">
     <div class="chart-header">
@@ -319,25 +605,38 @@ body {
         <span class="legend-item"><span class="legend-dot previous"></span> Previous Week</span>
       </div>
     </div>
-    <div class="chart-canvas-wrap"><canvas id="compChart"></canvas></div>
+    <div class="chart-canvas-wrap"><canvas id="compChart" role="img"></canvas></div>
   </div>
 
+  <!-- Insights -->
   <div class="section-title">Campaign Insights</div>
   <div class="insights-grid" id="insightsGrid"></div>
 
+  <!-- Footer -->
   <footer class="dash-footer">
     &copy; <span id="footerYear"></span> Talent X &middot; Weekly Campaign Performance Dashboard
   </footer>
 </div>
 
 <script>
+// ── Logo (base64 data URI) ──
 const LOGO_B64 = "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAFwAAAEUCAYAAACmk1HtAAARRElEQVR42u2dW2xk513Af9+5j8cz4/Fl7PXae99sdlNHCbRN0zRtShEotKUSDRICIeAFUSSQQBX0oeIBKlQJCQqqWvGAEDxAKUhcBKK0lCZpm9KkSdjdNLvr9V68vo4v47lfzpxzPh5m4nq9a2e99nht5/+T9mE1x2fO/M53/t//ux71i1/6VDrSqhthV7D80Pwdhf4lUbFLwpXW/ShOiIrdwRAFIlyECyJchAsiXIQLIlyEi3BBhItwQYSLcEGEi3ARLohwES6IcBEuiHARLsIFES7CBREuwgURLsJFuCDCRbggwkW4IMJFuAgXRLgIF0S4CBdEuAgX4YIIF+GCCBfhgggX4SJcEOEiXBDhIlwQ4SJchAsiXIQLIlyECyJchItwQYSLcEGEi3BBhItwES6IcBEuiHARLohwES7CBREuwgURLsIFES7CRbgoEOEiXNg5rL10MTqKCIOQKIiIwggiDQoM02j9s00M0xThOyNbM/HiG2SvTNMo1QibATrSKKUwLAO7yyN1qJezP/1juN0xEb4TwhevzrB4dXaDIwrU8mVOfehd+1r43orhSkmlKYhwES6IcBEuiHARLsIFES7CBREuwgURLsJFuNAJ9swAhDKg7/ggUTOkUW0Q1JvoKAIFpmPhdHkkMiks1xHhOyPc4KEPP8app8do1n2CRpMojFBKYTomtudiOhaGaYjwnZOuMB0L07EObEiRGC7CRbggwkW4IMJFuCDC3+ENnweNX2sQ+sGGn5uOhRNzRfhOMf7N88xcuHH3VjAw/OhxHvnoe1DbmAMpwteW8Eqdaq604eeNSl1iuFSawjsjpGit8asNdBCxURC2Yy6mbYrwnSCo+7z+1RcpzObunmHYJmOfeJLBMyMifEdKeKSpF2tUV8obCg/9psRwqTQFCSl7JmyFEWGjua3FXyJ8CyxeneV7f/0NlJTw3aFeqlIvVSWGS6UpiHARLsIFES7ChQfT0tSg0XurFajbF9ZBkkNpBh8eQbGLLc3AD5i9cINGubanhAd+QL3U2WvqGenn3LPvQRm7KbzhM/HixQ37nQ80SqEMta1BZInhUmmKcEGEi3BBhItw4X7ycMMwSQ71Ylj7aw9YwzTfduZrLN1Narhvgxwcunriuy/c6XJ47JNPoSO9v4qWAtPe/OeefmaMk0+d2/imWea2Gj33JRylsFz7YD7ujg1OZ3+bxHCpNEW4IMJFuCDCRbggwkX4gUdmz65HaxG+W8xfmqI4lxPh2yuwmmbNp5RdoSudILZJj9/shRtMvjIuwrdK2Azxq3VK2TzZK9Pkbmap5Eo89nNPbSpcYvgWiMKIynKRlckFslemWZlapFGuE/oBWuv2gtgH36W8b4XrKKJZ8ynOr7B0fZ789BKF2WVqhcqe7qvfP8IVRM2Qar5CeanA8vV5Fq7OUF0u4VcbkhbuFM16k1J2hcLMMss3syzfmKdeqhEFoeThOxKLgxC/2qCyVCQ7Ps3yjSzFudy+KsV7XngURlRXyuSnF1m4MkNucoF6sUrgN/ff2OleFK61Jmg0KWXzLF2bY2VqkcJsjupKubWF9QOiZ6SPZu3YwRAehRH1QoXKconcrQWyl6cpLeTxq/Xdy9beZsT9+PvOcuyJh/ev8MAPKC/myU8tkbu1wPL1eWrFKmEz2BXJpmPRlU6QOpQmNdxHz0j/5vfDNOjkK1T9amNnhUdhKzeurZTJjk+zdG2OwlyutVpilwQ7XS7xviQDp4bpPZohkenBS3Zta9XCTiQCK9NLjH/z/7YvXEcRtXyF/MwyC1dnWL6RpV6o0Kz7u1rh2TGHsZ99H/0nD+HGPUzH2vaknZ2gkitx/Ts/ZOq1azTKtfsTHvhNyovFH1V4M8tUcqWO5sZKKfQmXaembdF7NEO8N7FH2g8+069NcPP7VyjM5lavfcvCmzWfC//yEtnxGfxyfVMJ28Xpcoml4sT7ksQHkky+PI6/A3sHdjo5WJlaZOL5i2QvTxGuK4RbFh42g1Zc7sCKMcu1ifclSQ71kDzUR9/RDInBHizPoVaoMPP6dfw9LLu8WGDylXEmXxnf0M99zC3cuRDxViXXPZBi4NQw6aMZEgMp3O7YXSu5vdoEatZ9Zi/eZOKFixSz+U1HjXa14aOUwu326M6kSI9myJweJjHYg93lYtp7o5LbasKQm1zgyjfPs3R9btONgndFuDINbM8hkemh92iG1KFeEkNpuvuT+3sGrtZUVsrceOlNpl6/Rr1w77sEdUS45dr0HRtk6NwR+o4NEkt3tybDK/Y9Qb3J/OVbTLxwkfz08paTho6V8CiM8Kt1KrkSpmNhOda+WzWx/vfkbma59p0fkr083Wot30dI7YjwoNFkcWKWxYlZDNPAS8VJDqXpPZKh/+QhunpbJd60rT1f6rXW1PIVbrx0qZV93OceA263x8jjpzpfaUZhRDVXoporkb08heXYOHGX5FAvA6eH6T0yQHd/CrvL3XOyQz9g5sINrj5/gdJC4b56Mg3LYODUYc585DF6Rvt3N0vRkaZZ92nWfSrLJebenMSJtdLC5FCa1OE+eo8OEu9LYDn2A+v/iMKI/PQS1158g/lLtwj8+wgfhiI5mOb4U+c4/OhxnHaB2rpwvYOTk3SrBy03uUBucgFlKJy41+58OkR6dIB4X7I1tUFva0PMe6a6UubWD65y838vUytU7i98JGIcHjvOyacfobs/dVvY3LJwy7EZOjuKMhTlxcI95Z5beQIapRqNUo3czSyGaWLHbJKHeunuT9Gsd3Z35PlLt7j0tVcpzOXuu+Mt3pfkxPvP0nd8kMBvkp9d2l6WYnk25559NyeffhfF2WUWr82xcGWaWr7VQxiF0Q4+2iGNcsji1VkWr86+bW683abo7IWb5GeWt3WORrnG+LfOw7d2MC1USuElYnhnRhg4PczpD41RK1RYvDbH0sQs+Zkc9eLuzg8J/IDp89dbrddMq/X6IFquQaNJ0Gh2Lg9XhoET93DiHqnhPk48eZbycpHCTI6VWwssXZ+jslQk6PAoT9Bocvkbr3Ht22/Q3Z8iMdhDz+G+dv9MD5ZrP9BBiI41fAzLJDmYJjmYZuTxEzTKdQqzy2QvT5GfWqKSK9Eo1zpT+nWr+3hlapGVqUWmXp3A7nKI9ybpP3mIE0+doyvdfbCEbxR6Mg8dJvQDKstFlq7Prw5clJeKHRu40FrjVxr4lUWK8zl6j2YOtvA7mrWuTWq4j9RwX/udDdVW6b8y3Rpg7vjQ3Dt4MqcyFLGeOLGeOJkzIzTrPtVcqZWRTMxSmM3hVzo7ovSOEn5b3DcN3LiHG/dIjw5w8gOPUFrIU5jNrU6vqK6UCYNg745C7Cfh6zEdi56RfnpG+jny7lPUS7XWrIDLU6xML1HNlVrvRdth+aZrrTbB31HC16edsVScWCrO0NlRgkaT8kKexYm51pzwuRzVXGlHGlynPjjGkR8/3dGnaF9NyFdKYXsO6SMZ0kcyRGFELV+mMJsje3mK3OQCtXzlvieBxnsTHZ9msa+XnBim0ZpC0Zdk6NwRmrUG5aUiC+MzLE3MUpxfwa819lTcPzBrfAzTwO2O4XbH6Ds2SPDBMYrtify5yQVWphdRpiHCO/bDPJveoxl6j2Y4+t6HqBer2DFHhO9K6bdMuvbIFDhZay/CRbggwkW40KksRUeaar5M1NygD1tBLBU/sLt37rpwv1rn1a+8QGl+ZcMU7PHnPsDQuSP7TkbuZpbycnHDzxOZHtKjA29fKLVub6qwEyVca4K6v+HKYMMyicL9uSz75svj3Npkv5STTz9yT8L9Sp3z//wStbvMqpUdgW4vTZsPeNxjn0wURORnlqksFaXSlCxFhAsiXIQLIvygNnzuJbVq1nwapdqemtGgFNie88DXGe248CiMePNrrzL+Pxf21qNsG4x9/AkyD40csBIO1IvVPfcom7a56TRiieFSaQoiXIQLInxHc8s9mqUcVGr5CkvX5t72uEalvuGImCVF9N6ZfWOS+UtT99L6Iwyi3RGuDIMT7z/bHhnZO21NZRikR/u314iOIsJt7hzaAeGK/pOHGB47JjFo9ypNLWYlSxHhIlwQ4QcOafiswfYc3ERMhO8Wpz/8KMfe97AI3y28ZBdesmtvCTctk74TQ8R67r4rg2Eo3ESX3L2dEm7HXMY+9sQmc/AUhil18Y6GlP28w6akhSJcEOEiXBDhIlwQ4SJchAsdb2kqVQA9Iyp2S7gR/XkUGX8jKgRBEARBEARBEARBEIS9xlsTTFzP846Yptlv23ZPEAQKWP8CeQvPG3FNc8CyrF7LstJhGAZw25vP067rjliW1WvbdjIIAh+4fYF7ItGPYQwQBFVgowUzFp43gmWlNjnOIBYbtpU6GXmeotmscvvSC5NYbATP8/D9ta8NtD3POxq4rtv+G9fzvNENfrMikei3tX4ochyXICizteUdinh8yDWMIcuyekPHac0UdRznnOV5r1iu+0PLdS9YrvuC6bo/w9r+8nh80HLdr1uue8ly3fOW677ePmZVgO26n7Jcd9xy3YuW6563Pe/vXNc9s/YCLMf5rOW6/43nHd3oKm3bfq/leS9brvuaFYs9eZdDui3H+YzleT8wXfeG5Xkv2573q8Da3SnTluv+m+V5n2PN8jXP845ZjvNdy3X/y/O8447jnLUc57u25/36uu9wTM/7Zct1v2267g3Ldc9bjvMHwFbm8Xmm637Rct0rba+vGQBaaxetj2l4Xin1FxqGFfzWbSePIgs4AlzXSv2pVurPbKUurz271jqNUv0K/hKtv6q1fjbU+hO333PVDxxxtd5o606lTfOjaD0KDNL6+9uONR3nJ4FPKxhH688quE4UPUMikVrzJBnAqNY6s1a41tpGqWPATzS1/t3INHtR6piOop51N/1RpfUfAzW0/izwLa3UEIktzWc2FAwBaKX+RCl1ybr9U9Wno2gYpSygcrfHR8PDSutfAMLAMK4B128/QJtaqWEghlJa3fmYbk4i0Yfvfxj4Svt8HyMW+yK12vRqKFHqYxqKRhR9LvT9N0P4V4B1oePtuKTgOaIo4M4FnArTfBStu1Hq8woclCqqKAqcRmPAhy29A1KDo6JoRCuVtNaIUhqeRqlnDShopb4AVO8MSsyh1PeJosgIw9xdzt+F1p8EKmj9t03T/Me7XIBq1x9mOz6v3ljT958ExoDvtUv2qBmGT4QwveYUDQMsrXUXYNLVlQAU1Wr1nmOsUv+h4IiGX6F1ntuIoKlAaa3jBpzUWj+HUqOh1heBy2wpkJNBqd8EMsaaC4iAL6DUlzW4KKU3uPgGWheVUqUNzp/DMH4tcJyfChqN36danbszZuh0CL9hOc5nbNt+bM1HMUPr59o34lngIwCGYfw84L3lQin1TxpsbRiftxzn01YYfsUKwy+SSPTes4UoKqko+iO0vgGsfzmENqPoNSCr4A+11kngJkr5Sqmt776j1Jta699WkDXb8SqpYUxr/XVT6xe0UmNK61oUhq+uZgie55laPw70Ag8DZ7RS56MwvLZ6Wts+piAVwD+0Ra9fcK5MyzqDUoPAYZQ6rpV6Q4dha8PX7u5eU+uPo9R/Wkr9nqHU30dKhWg94Nj294IgyANEQTCnTPOmUmoMpZ4BZoEvRdXqpdVC4vuOaZqPA+NRGH73rQsIHSduaP24NozvB43G88o0F5VSGQ0v6DC8uHpcGOYM276oWvH+I4Cv4MtBo/HvQONes0DDth/RWhdD3/8rw7Y9tZqGQQKotdO8ZPvCi2tKuQEkSSR+NFe5VCqv+/JYuyQW7yJ7Nd8hkfA2OIfZ/u7GmnDW1T5n6Y4UE5LEYglqtWL783VPMqn231TWpcLJdgpYW/Pb3/r/ndcbi/VQq9WA/Cap7AbRhO62uyIQ+3/qB9eBL1QO9wAAAABJRU5ErkJggg==";
-document.getElementById('intro-logo').src = LOGO_B64;
-document.getElementById('main-logo').src = LOGO_B64;
+function setLogo(img) {
+  // If the logo file is missing, show a text mark instead of a broken image
+  img.addEventListener('error', () => {
+    const mark = document.createElement('span');
+    mark.className = 'logo-fallback';
+    mark.textContent = 'Talent X';
+    img.replaceWith(mark);
+  }, { once: true });
+  img.src = LOGO_B64;
+}
+setLogo(document.getElementById('intro-logo'));
+setLogo(document.getElementById('main-logo'));
 
 // ── Data ──
-const currentWeek = { callsTaken: 217, callsConnected: 64, callbacks: 6, appointments: 4 };
-const previousWeek = { callsTaken: 229, callsConnected: 47, callbacks: 0, appointments: 5 };
+const currentWeek = { callsTaken: 203, callsConnected: 41, callbacks: 0, appointments: 0 };
+const previousWeek = { callsTaken: 217, callsConnected: 64, callbacks: 6, appointments: 4 };
 
 function pct(n, d) { return d === 0 ? 0 : parseFloat(((n / d) * 100).toFixed(2)); }
 function delta(cur, prev) { return prev === 0 ? 100 : parseFloat((((cur - prev) / prev) * 100).toFixed(1)); }
@@ -348,51 +647,150 @@ const prevConnPct = pct(previousWeek.callsConnected, previousWeek.callsTaken);
 const curApptPct = pct(currentWeek.appointments, currentWeek.callsConnected);
 const prevApptPct = pct(previousWeek.appointments, previousWeek.callsConnected);
 
-// ── Date ──
-const now = new Date();
-document.getElementById('currentDate').textContent = now.toLocaleDateString('en-AU', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' });
-document.getElementById('footerYear').textContent = now.getFullYear();
+// ── Animation helpers ──
+const REDUCED = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+const clamp01 = v => Math.max(0, Math.min(1, v));
+const easeOutCubic = t => 1 - Math.pow(1 - t, 3);
 
-// ── KPIs ──
+function getCSS(prop) {
+  return getComputedStyle(document.documentElement).getPropertyValue(prop).trim();
+}
+function toRGBA(color, a) {
+  const c = color.trim();
+  if (c[0] === '#') {
+    let h = c.slice(1);
+    if (h.length === 3) h = h.split('').map(x => x + x).join('');
+    const n = parseInt(h, 16);
+    return `rgba(${(n >> 16) & 255},${(n >> 8) & 255},${n & 255},${a})`;
+  }
+  const m = c.match(/[\d.]+/g);
+  return m && m.length >= 3 ? `rgba(${m[0]},${m[1]},${m[2]},${a})` : c;
+}
+
+// Theme colours are read once and refreshed when the theme changes
+let palette = {};
+function readPalette() {
+  palette = {
+    cur: getCSS('--chart-current'), prev: getCSS('--chart-previous'),
+    text: getCSS('--text-secondary'), strong: getCSS('--text-primary'),
+    muted: getCSS('--text-tertiary'), grid: getCSS('--glass-border'),
+    bg: getCSS('--bg-deep'), green: getCSS('--brand-green'),
+    dark: getCSS('--brand-dark'),
+  };
+}
+readPalette();
+
+// ── Date & live clock ──
+const dateEl = document.getElementById('currentDate');
+const clockEl = document.getElementById('liveClock');
+function tickClock() {
+  const now = new Date();
+  dateEl.textContent = now.toLocaleDateString('en-AU', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' });
+  clockEl.textContent = now.toLocaleTimeString('en-AU', { hour: 'numeric', minute: '2-digit', second: '2-digit' });
+}
+tickClock();
+setInterval(tickClock, 1000);
+document.getElementById('footerYear').textContent = new Date().getFullYear();
+
+// ── KPI definitions ──
 const kpiDefs = [
-  { key: 'callsTaken', label: 'Total Calls Taken', desc: 'Total outbound dials placed this period', icon: '📞', iconClass: 'green' },
-  { key: 'callsConnected', label: 'Total Calls Connected', desc: 'Live conversations with prospects', icon: '🔗', iconClass: 'dark' },
-  { key: 'connPct', label: 'Connected Calls %', desc: 'Proportion of calls resulting in conversations', icon: '📊', iconClass: 'green' },
-  { key: 'callbacks', label: 'Total Callbacks', desc: 'Prospects requesting a follow-up call', icon: '🔄', iconClass: 'dark' },
-  { key: 'appointments', label: 'Total Appointments', desc: 'Confirmed meetings booked', icon: '📅', iconClass: 'green' },
-  { key: 'apptPct', label: 'Appointment %', desc: 'Conversion rate from connections to meetings', icon: '🎯', iconClass: 'dark' },
+  { key: 'callsTaken', label: 'Total Calls Taken', desc: 'Total outbound dials placed this period', icon: '📞', iconClass: 'green', anim: 'ring' },
+  { key: 'callsConnected', label: 'Total Calls Connected', desc: 'Live conversations with prospects', icon: '🔗', iconClass: 'dark', anim: 'link' },
+  { key: 'connPct', label: 'Connected Calls %', desc: 'Proportion of calls resulting in conversations', icon: '📊', iconClass: 'green', anim: 'bars' },
+  { key: 'callbacks', label: 'Total Callbacks', desc: 'Prospects requesting a follow-up call', icon: '🔄', iconClass: 'dark', anim: 'spin' },
+  { key: 'appointments', label: 'Total Appointments', desc: 'Confirmed meetings booked', icon: '📅', iconClass: 'green', anim: 'flip' },
+  { key: 'apptPct', label: 'Appointment %', desc: 'Conversion rate from connections to meetings', icon: '🎯', iconClass: 'dark', anim: 'target' },
 ];
 
-function getVal(data, key, cp, ap) {
-  if (key === 'connPct') return cp;
-  if (key === 'apptPct') return ap;
+function getVal(data, key, connPct, apptPct) {
+  if (key === 'connPct') return connPct;
+  if (key === 'apptPct') return apptPct;
   return data[key];
 }
 
-function buildKPIs(container, data, cp, ap, otherData, ocp, oap) {
+const RING_C = 2 * Math.PI * 21;
+function fmtKPI(v, isPct) { return isPct ? v.toFixed(2) + '%' : Math.round(v).toLocaleString(); }
+
+function buildKPIs(container, data, connPct, apptPct, otherData, otherConnPct, otherApptPct) {
   container.innerHTML = '';
+  const vsLabel = container.id === 'currentKPIs' ? 'Previous' : 'Current';
   kpiDefs.forEach((def, i) => {
-    const val = getVal(data, def.key, cp, ap);
-    const otherVal = getVal(otherData, def.key, ocp, oap);
+    const val = getVal(data, def.key, connPct, apptPct);
+    const otherVal = getVal(otherData, def.key, otherConnPct, otherApptPct);
     const d = delta(val, otherVal);
     const isUp = d >= 0;
     const isPct = def.key === 'connPct' || def.key === 'apptPct';
     const card = document.createElement('div');
     card.className = 'kpi-card';
     card.style.transitionDelay = (i * 0.08) + 's';
+    card.style.setProperty('--d', (i * 0.45) + 's');
+
+    // Percentage cards get a live ring gauge; count cards get a live meter
+    const ring = isPct ? `
+        <svg class="kpi-ring ${def.iconClass}" viewBox="0 0 52 52" aria-hidden="true">
+          <circle class="ring-track" cx="26" cy="26" r="21"/>
+          <circle class="ring-fill" cx="26" cy="26" r="21" transform="rotate(-90 26 26)"
+            style="--c:${RING_C.toFixed(2)};--off:${(RING_C * (1 - Math.min(val, 100) / 100)).toFixed(2)}"/>
+          <g class="ring-orbit"><circle cx="26" cy="5" r="2.2"/></g>
+        </svg>` : '';
+    const top = Math.max(val, otherVal);
+    const meter = isPct ? '' : `
+      <div class="kpi-meter ${def.iconClass}" aria-hidden="true">
+        <span class="kpi-meter-fill" style="--fill:${(top === 0 ? 0 : (val / top) * 100).toFixed(1)}%"></span>
+      </div>`;
+
     card.innerHTML = `
-      <div class="kpi-icon ${def.iconClass}">${def.icon}</div>
-      <p class="kpi-value">${isPct ? val.toFixed(2) + '%' : val.toLocaleString()}</p>
+      <span class="kpi-shine" aria-hidden="true"></span>
+      <div class="kpi-top">
+        <div class="kpi-icon ${def.iconClass} anim-${def.anim}"><span class="kpi-emoji">${def.icon}</span></div>${ring}
+      </div>
+      <p class="kpi-value" data-target="${val}" data-pct="${isPct ? 1 : 0}">${fmtKPI(val, isPct)}</p>
       <p class="kpi-label">${def.label}</p>
-      <p class="kpi-desc">${def.desc}</p>
-      <div class="kpi-delta ${isUp ? 'up' : 'down'}">${fmtDelta(d)} vs ${container.id === 'currentKPIs' ? 'Previous' : 'Current'} Week</div>
+      <p class="kpi-desc">${def.desc}</p>${meter}
+      <div class="kpi-delta ${isUp ? 'up' : 'down'}"><span class="delta-arrow">${isUp ? '↑' : '↓'}</span> ${Math.abs(d).toFixed(1)}% vs ${vsLabel} Week</div>
     `;
+    attachTilt(card);
     container.appendChild(card);
+  });
+}
+
+// Cards lean toward the pointer and a soft spotlight follows it
+function attachTilt(card) {
+  if (REDUCED || !window.matchMedia('(hover: hover)').matches) return;
+  card.addEventListener('pointermove', e => {
+    const r = card.getBoundingClientRect();
+    const x = clamp01((e.clientX - r.left) / r.width);
+    const y = clamp01((e.clientY - r.top) / r.height);
+    card.style.setProperty('--ry', ((x - 0.5) * 8).toFixed(2) + 'deg');
+    card.style.setProperty('--rx', ((0.5 - y) * 8).toFixed(2) + 'deg');
+    card.style.setProperty('--mx', (x * 100).toFixed(1) + '%');
+    card.style.setProperty('--my', (y * 100).toFixed(1) + '%');
+    card.classList.add('tilting');
+  });
+  card.addEventListener('pointerleave', () => {
+    card.classList.remove('tilting');
+    card.style.setProperty('--rx', '0deg');
+    card.style.setProperty('--ry', '0deg');
   });
 }
 
 buildKPIs(document.getElementById('currentKPIs'), currentWeek, curConnPct, curApptPct, previousWeek, prevConnPct, prevApptPct);
 buildKPIs(document.getElementById('prevKPIs'), previousWeek, prevConnPct, prevApptPct, currentWeek, curConnPct, curApptPct);
+
+// Numbers count up from zero when their card scrolls into view
+function countUp(el, target, isPct, delayMs) {
+  if (REDUCED) { el.textContent = fmtKPI(target, isPct); return; }
+  const dur = 1400;
+  let t0 = null;
+  el.textContent = fmtKPI(0, isPct);
+  function step(ts) {
+    if (t0 === null) t0 = ts + delayMs;
+    const p = clamp01((ts - t0) / dur);
+    el.textContent = fmtKPI(target * easeOutCubic(p), isPct);
+    if (p < 1) requestAnimationFrame(step);
+  }
+  requestAnimationFrame(step);
+}
 
 // ── Insights ──
 const insights = [
@@ -407,11 +805,107 @@ insights.forEach((ins, i) => {
   const card = document.createElement('div');
   card.className = 'insight-card';
   card.style.transitionDelay = (i * 0.07) + 's';
-  card.innerHTML = `<p class="insight-num">${ins.num}</p><h3 class="insight-title">${ins.title}</h3><p class="insight-body">${ins.body}</p>`;
+  card.style.setProperty('--d', (i * 0.6) + 's');
+  card.innerHTML = `
+    <span class="insight-bar" aria-hidden="true"></span>
+    <p class="insight-num">${ins.num}</p>
+    <h3 class="insight-title">${ins.title}</h3>
+    <p class="insight-body">${ins.body}</p>
+  `;
   insightsGrid.appendChild(card);
 });
 
-// ── Canvas chart ──
+// ── Live background network ──
+const bg = document.getElementById('bgCanvas');
+const bctx = bg.getContext('2d');
+const net = { W: 0, H: 0, dpr: 1, nodes: [], pulses: [], mx: -9999, my: -9999, lastPulse: 0 };
+
+function sizeBg() {
+  net.dpr = Math.min(window.devicePixelRatio || 1, 2);
+  net.W = window.innerWidth; net.H = window.innerHeight;
+  bg.width = Math.round(net.W * net.dpr); bg.height = Math.round(net.H * net.dpr);
+  const count = Math.max(22, Math.min(64, Math.round(net.W * net.H / 26000)));
+  while (net.nodes.length < count) {
+    net.nodes.push({
+      x: Math.random() * net.W, y: Math.random() * net.H,
+      vx: (Math.random() - 0.5) * 0.35, vy: (Math.random() - 0.5) * 0.35,
+      r: 1.4 + Math.random() * 2.2, ph: Math.random() * 6.28, c: Math.random() < 0.5 ? 0 : 1,
+    });
+  }
+  net.nodes.length = count;
+  net.pulses = [];
+}
+
+function drawBg(time) {
+  const { W, H, dpr, nodes } = net;
+  bctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+  bctx.clearRect(0, 0, W, H);
+
+  if (!REDUCED) {
+    nodes.forEach(n => {
+      n.x += n.vx; n.y += n.vy;
+      if (n.x < 0 || n.x > W) { n.vx *= -1; n.x = Math.max(0, Math.min(W, n.x)); }
+      if (n.y < 0 || n.y > H) { n.vy *= -1; n.y = Math.max(0, Math.min(H, n.y)); }
+    });
+  }
+
+  // Links between nearby nodes
+  const LINK = 150, links = [];
+  bctx.lineWidth = 1; bctx.strokeStyle = palette.dark;
+  for (let i = 0; i < nodes.length; i++) {
+    for (let j = i + 1; j < nodes.length; j++) {
+      const dx = nodes[i].x - nodes[j].x, dy = nodes[i].y - nodes[j].y;
+      const dist = Math.sqrt(dx * dx + dy * dy);
+      if (dist < LINK) {
+        bctx.globalAlpha = (1 - dist / LINK) * 0.16;
+        bctx.beginPath(); bctx.moveTo(nodes[i].x, nodes[i].y); bctx.lineTo(nodes[j].x, nodes[j].y); bctx.stroke();
+        links.push(i, j);
+      }
+    }
+  }
+
+  // Links that reach toward the pointer
+  bctx.strokeStyle = palette.green;
+  nodes.forEach(n => {
+    const dx = n.x - net.mx, dy = n.y - net.my;
+    const dist = Math.sqrt(dx * dx + dy * dy);
+    if (dist < 190) {
+      bctx.globalAlpha = (1 - dist / 190) * 0.3;
+      bctx.beginPath(); bctx.moveTo(n.x, n.y); bctx.lineTo(net.mx, net.my); bctx.stroke();
+    }
+  });
+
+  // Signal pulses travelling along links, like calls connecting
+  if (!REDUCED) {
+    if (time - net.lastPulse > 420 && links.length) {
+      net.lastPulse = time;
+      const k = Math.floor(Math.random() * (links.length / 2)) * 2;
+      net.pulses.push({ a: links[k], b: links[k + 1], t: 0 });
+    }
+    net.pulses = net.pulses.filter(p => p.t < 1 && nodes[p.a] && nodes[p.b]);
+    bctx.fillStyle = palette.green;
+    net.pulses.forEach(p => {
+      p.t += 0.02;
+      const a = nodes[p.a], b = nodes[p.b];
+      bctx.globalAlpha = Math.sin(Math.PI * clamp01(p.t)) * 0.6;
+      bctx.beginPath(); bctx.arc(a.x + (b.x - a.x) * p.t, a.y + (b.y - a.y) * p.t, 2, 0, Math.PI * 2); bctx.fill();
+    });
+  }
+
+  // Nodes, gently breathing
+  nodes.forEach(n => {
+    const r = n.r + (REDUCED ? 0 : Math.sin(time / 900 + n.ph) * 0.6);
+    bctx.globalAlpha = 0.22;
+    bctx.fillStyle = n.c ? palette.green : palette.dark;
+    bctx.beginPath(); bctx.arc(n.x, n.y, Math.max(0.5, r), 0, Math.PI * 2); bctx.fill();
+  });
+  bctx.globalAlpha = 1;
+}
+
+window.addEventListener('pointermove', e => { net.mx = e.clientX; net.my = e.clientY; }, { passive: true });
+document.documentElement.addEventListener('pointerleave', () => { net.mx = net.my = -9999; });
+
+// ── Live canvas chart ──
 const canvas = document.getElementById('compChart');
 const ctx = canvas.getContext('2d');
 const chartData = [
@@ -420,92 +914,261 @@ const chartData = [
   { label: 'Callbacks', cur: currentWeek.callbacks, prev: previousWeek.callbacks },
   { label: 'Appointments', cur: currentWeek.appointments, prev: previousWeek.appointments },
 ];
+canvas.setAttribute('aria-label', 'Bar chart, current week versus previous week. ' +
+  chartData.map(d => `${d.label}: ${d.cur} versus ${d.prev}`).join('. ') + '.');
 
-function getCSS(prop) { return getComputedStyle(document.documentElement).getPropertyValue(prop).trim(); }
+const chart = { W: 0, H: 0, dpr: 1, t0: null, last: 0, hover: -1, px: 0, py: 0, visible: false, sparks: [] };
+const PAD = { l: 62, r: 20, t: 24, b: 52 };
+
+function sizeChart() {
+  const rect = canvas.getBoundingClientRect();
+  chart.dpr = window.devicePixelRatio || 1;
+  chart.W = rect.width; chart.H = rect.height;
+  canvas.width = Math.max(1, Math.round(rect.width * chart.dpr));
+  canvas.height = Math.max(1, Math.round(rect.height * chart.dpr));
+}
+
+function roundedBar(c, x, y, w, h, r) {
+  if (h < 1) h = 1;
+  r = Math.min(r, w / 2, h / 2);
+  c.beginPath();
+  c.moveTo(x, y + h);
+  c.lineTo(x, y + r);
+  c.arcTo(x, y, x + r, y, r);
+  c.lineTo(x + w - r, y);
+  c.arcTo(x + w, y, x + w, y + r, r);
+  c.lineTo(x + w, y + h);
+  c.closePath();
+}
+function roundedRect(c, x, y, w, h, r) {
+  r = Math.min(r, w / 2, h / 2);
+  c.beginPath();
+  c.moveTo(x + r, y);
+  c.arcTo(x + w, y, x + w, y + h, r);
+  c.arcTo(x + w, y + h, x, y + h, r);
+  c.arcTo(x, y + h, x, y, r);
+  c.arcTo(x, y, x + w, y, r);
+  c.closePath();
+}
+
+// One bar: grows in, breathes gently, and a light sweeps up it. Returns its top edge.
+function drawBar(x, w, baseY, fullH, p, wob, color, time, seed, glow) {
+  const amp = Math.min(2.5, fullH * 0.1) * p;       // breathing stays small relative to the value
+  const h = Math.max(1, fullH * p + wob * amp);
+  const y = baseY - h;
+  const g = ctx.createLinearGradient(0, y, 0, baseY);
+  g.addColorStop(0, color);
+  g.addColorStop(1, toRGBA(color, 0.55));
+  ctx.save();
+  if (glow > 0) { ctx.shadowColor = toRGBA(color, glow); ctx.shadowBlur = 14; }
+  ctx.fillStyle = g;
+  roundedBar(ctx, x, y, w, h, 4);
+  ctx.fill();
+  ctx.restore();
+
+  if (!REDUCED && h > 14) {
+    ctx.save();
+    roundedBar(ctx, x, y, w, h, 4);
+    ctx.clip();
+    const cycle = (time / 2800 + seed * 0.21) % 1;
+    const sy = baseY + 30 - cycle * (h + 60);
+    const sg = ctx.createLinearGradient(0, sy - 22, 0, sy + 22);
+    sg.addColorStop(0, 'rgba(255,255,255,0)');
+    sg.addColorStop(0.5, 'rgba(255,255,255,0.32)');
+    sg.addColorStop(1, 'rgba(255,255,255,0)');
+    ctx.fillStyle = sg;
+    ctx.fillRect(x, sy - 22, w, 44);
+    ctx.restore();
+  }
+  return y;
+}
 
 function drawChart(time) {
-  const dpr = window.devicePixelRatio || 1;
-  const rect = canvas.getBoundingClientRect();
-  canvas.width = rect.width * dpr; canvas.height = rect.height * dpr;
-  ctx.scale(dpr, dpr);
-  const W = rect.width, H = rect.height;
-  const colCur = getCSS('--chart-current'), colPrev = getCSS('--chart-previous');
-  const colText = getCSS('--text-secondary'), colMuted = getCSS('--text-tertiary'), colGrid = getCSS('--glass-border');
+  const { W, H, dpr } = chart;
+  if (!W || !H) return;
+  if (chart.t0 === null) chart.t0 = time;
+  const t = REDUCED ? 1e9 : time - chart.t0;
+  const dt = Math.min(3, Math.max(0.2, (time - chart.last) / 16.67));
+  chart.last = time;
+
+  ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
   ctx.clearRect(0, 0, W, H);
 
-  const padL = 62, padR = 20, padT = 20, padB = 52;
-  const plotW = W - padL - padR, plotH = H - padT - padB;
-  const maxVal = Math.max(...chartData.map(d => Math.max(d.cur, d.prev)));
+  const plotW = W - PAD.l - PAD.r;
+  const plotH = H - PAD.t - PAD.b;
+  const baseY = PAD.t + plotH;
+  const maxVal = Math.max(1, ...chartData.map(d => Math.max(d.cur, d.prev)));
   const niceMax = Math.ceil(maxVal / 50) * 50;
 
-  // Grid
+  // Grid draws in from the left, dashes drift slowly
+  const gridIn = easeOutCubic(clamp01(t / 700));
   const gridSteps = 5;
-  ctx.strokeStyle = colGrid; ctx.lineWidth = 1;
-  ctx.fillStyle = colMuted; ctx.font = '500 11px Nunito, sans-serif'; ctx.textAlign = 'right';
+  ctx.strokeStyle = palette.grid; ctx.lineWidth = 1;
+  ctx.fillStyle = palette.muted; ctx.font = '500 11px Nunito, sans-serif'; ctx.textAlign = 'right';
   for (let i = 0; i <= gridSteps; i++) {
-    const y = padT + plotH - (i / gridSteps) * plotH;
-    ctx.beginPath(); ctx.moveTo(padL, y); ctx.lineTo(padL + plotW, y); ctx.stroke();
-    ctx.fillText(Math.round((i / gridSteps) * niceMax).toLocaleString(), padL - 8, y + 4);
+    const y = baseY - (i / gridSteps) * plotH;
+    ctx.setLineDash(i === 0 ? [] : [4, 6]);
+    ctx.lineDashOffset = REDUCED ? 0 : -(time / 70) % 10;
+    ctx.beginPath(); ctx.moveTo(PAD.l, y); ctx.lineTo(PAD.l + plotW * gridIn, y); ctx.stroke();
+    ctx.globalAlpha = gridIn;
+    ctx.fillText(Math.round((i / gridSteps) * niceMax).toLocaleString(), PAD.l - 8, y + 4);
+    ctx.globalAlpha = 1;
   }
+  ctx.setLineDash([]);
 
-  // Bars
   const groupW = plotW / chartData.length;
   const barW = Math.min(24, groupW * 0.28);
   const gap = 6;
 
+  // Highlight band behind the hovered group
+  if (chart.hover >= 0) {
+    ctx.fillStyle = palette.grid;
+    roundedRect(ctx, PAD.l + groupW * chart.hover + 4, PAD.t - 8, groupW - 8, plotH + 8, 10);
+    ctx.fill();
+  }
+
   chartData.forEach((d, i) => {
-    const cx = padL + groupW * i + groupW / 2;
-    const floatOff = Math.sin(time / 1200 + i * 1.3) * 2.5;
+    const cx = PAD.l + groupW * i + groupW / 2;
+    const pPrev = easeOutCubic(clamp01((t - 150 - i * 130) / 1200));
+    const pCur = easeOutCubic(clamp01((t - 260 - i * 130) / 1200));
+    const wob = REDUCED ? 0 : Math.sin(time / 1200 + i * 1.3);
+    const hot = chart.hover === i;
 
-    const prevH = Math.max(1, (d.prev / niceMax) * plotH);
+    // Previous bar
     const prevX = cx - barW - gap / 2;
-    const prevY = padT + plotH - prevH + floatOff;
-    ctx.fillStyle = colPrev;
-    roundedBar(ctx, prevX, prevY, barW, prevH - floatOff, 4); ctx.fill();
+    drawBar(prevX, barW, baseY, (d.prev / niceMax) * plotH, pPrev, wob, palette.prev, time, i + 0.5, hot ? 0.45 : 0);
 
-    const curH = Math.max(1, (d.cur / niceMax) * plotH);
+    // Current bar
     const curX = cx + gap / 2;
-    const curY = padT + plotH - curH + floatOff * 0.7;
-    ctx.fillStyle = colCur;
-    roundedBar(ctx, curX, curY, barW, curH - floatOff * 0.7, 4); ctx.fill();
+    const curY = drawBar(curX, barW, baseY, (d.cur / niceMax) * plotH, pCur, wob * 0.7, palette.cur, time, i, hot ? 0.6 : 0.35);
 
-    // Value on current bar
-    ctx.fillStyle = colText; ctx.font = '700 11px Nunito, sans-serif'; ctx.textAlign = 'center';
-    ctx.fillText(d.cur.toLocaleString(), curX + barW / 2, curY - 6);
+    // Value label counts up with the bar (current bars only)
+    ctx.fillStyle = palette.text; ctx.font = '700 11px Nunito, sans-serif'; ctx.textAlign = 'center';
+    ctx.globalAlpha = clamp01(pCur * 2);
+    ctx.fillText(Math.round(d.cur * pCur).toLocaleString(), curX + barW / 2, curY - 6);
 
     // X labels
-    ctx.fillStyle = colMuted; ctx.font = '600 11px Nunito, sans-serif';
-    d.label.split(' ').forEach((line, li) => { ctx.fillText(line, cx, padT + plotH + 18 + li * 14); });
+    ctx.globalAlpha = gridIn;
+    ctx.fillStyle = hot ? palette.text : palette.muted; ctx.font = '600 11px Nunito, sans-serif';
+    d.label.split(' ').forEach((line, li) => {
+      ctx.fillText(line, cx, baseY + 18 + li * 14);
+    });
+    ctx.globalAlpha = 1;
+
+    // Sparks lift off the top of the current bar
+    if (!REDUCED && pCur >= 1 && chart.sparks.length < 48 && Math.random() < 0.1 * dt) {
+      chart.sparks.push({ x: curX + Math.random() * barW, y: curY, vy: 0.25 + Math.random() * 0.45, life: 1, r: 1 + Math.random() * 1.6 });
+    }
   });
 
-  // Floating particles
-  for (let p = 0; p < 8; p++) {
-    const px = padL + (Math.sin(time / 3000 + p * 2.1) * 0.5 + 0.5) * plotW;
-    const py = padT + (Math.cos(time / 2500 + p * 1.7) * 0.5 + 0.5) * plotH;
-    const pr = 2 + Math.sin(time / 1800 + p) * 1;
-    ctx.beginPath(); ctx.arc(px, py, pr, 0, Math.PI * 2);
-    ctx.fillStyle = p % 2 === 0 ? colCur : colPrev;
-    ctx.globalAlpha = 0.12; ctx.fill(); ctx.globalAlpha = 1;
+  if (!REDUCED) {
+    chart.sparks = chart.sparks.filter(s => s.life > 0);
+    ctx.fillStyle = palette.cur;
+    chart.sparks.forEach(s => {
+      s.y -= s.vy * dt; s.life -= 0.014 * dt;
+      ctx.globalAlpha = Math.max(0, s.life) * 0.5;
+      ctx.beginPath(); ctx.arc(s.x, s.y, s.r, 0, Math.PI * 2); ctx.fill();
+    });
+
+    // Floating particles
+    for (let p = 0; p < 8; p++) {
+      const px = PAD.l + (Math.sin(time / 3000 + p * 2.1) * 0.5 + 0.5) * plotW;
+      const py = PAD.t + (Math.cos(time / 2500 + p * 1.7) * 0.5 + 0.5) * plotH;
+      const pr = 2 + Math.sin(time / 1800 + p) * 1;
+      ctx.beginPath(); ctx.arc(px, py, pr, 0, Math.PI * 2);
+      ctx.fillStyle = p % 2 === 0 ? palette.cur : palette.prev;
+      ctx.globalAlpha = 0.15;
+      ctx.fill();
+    }
+    ctx.globalAlpha = 1;
   }
-  requestAnimationFrame(drawChart);
+
+  // Tooltip for the hovered group
+  if (chart.hover >= 0) {
+    const d = chartData[chart.hover];
+    const lines = [d.label, 'Current week: ' + d.cur.toLocaleString(), 'Previous week: ' + d.prev.toLocaleString(), fmtDelta(delta(d.cur, d.prev)) + ' week on week'];
+    ctx.font = '700 11px Nunito, sans-serif';
+    const tw = Math.max(...lines.map(l => ctx.measureText(l).width)) + 22;
+    const th = lines.length * 16 + 14;
+    let tx = chart.px + 14, ty = chart.py - th - 10;
+    if (tx + tw > W - 4) tx = chart.px - tw - 14;
+    if (tx < 4) tx = 4;
+    if (ty < 4) ty = chart.py + 16;
+    ctx.globalAlpha = 0.95; ctx.fillStyle = palette.strong;
+    roundedRect(ctx, tx, ty, tw, th, 8); ctx.fill();
+    ctx.textAlign = 'left'; ctx.fillStyle = palette.bg;
+    lines.forEach((l, li) => {
+      ctx.globalAlpha = li === 0 ? 1 : 0.85;
+      ctx.font = (li === 0 ? '800' : '600') + ' 11px Nunito, sans-serif';
+      ctx.fillText(l, tx + 11, ty + 19 + li * 16);
+    });
+    ctx.globalAlpha = 1;
+  }
 }
 
-function roundedBar(ctx, x, y, w, h, r) {
-  if (h < 1) h = 1; r = Math.min(r, w / 2, h / 2);
-  ctx.beginPath(); ctx.moveTo(x, y + h); ctx.lineTo(x, y + r);
-  ctx.arcTo(x, y, x + r, y, r); ctx.lineTo(x + w - r, y);
-  ctx.arcTo(x + w, y, x + w, y + r, r); ctx.lineTo(x + w, y + h); ctx.closePath();
+function chartPointer(e) {
+  const r = canvas.getBoundingClientRect();
+  const x = e.clientX - r.left, y = e.clientY - r.top;
+  const groupW = (chart.W - PAD.l - PAD.r) / chartData.length;
+  const idx = Math.floor((x - PAD.l) / groupW);
+  chart.hover = (x >= PAD.l && idx >= 0 && idx < chartData.length) ? idx : -1;
+  chart.px = x; chart.py = y;
+  if (REDUCED) drawChart(performance.now());
 }
+canvas.addEventListener('pointermove', chartPointer);
+canvas.addEventListener('pointerdown', chartPointer);
+canvas.addEventListener('pointerleave', e => {
+  if (e.pointerType !== 'mouse') return;   // on touch, the tooltip stays until the next tap
+  chart.hover = -1;
+  if (REDUCED) drawChart(performance.now());
+});
 
 // ── Scroll reveal ──
+function reveal(el) {
+  el.classList.add('revealed');
+  const delayMs = (parseFloat(el.style.transitionDelay) || 0) * 1000;
+  el.querySelectorAll('.kpi-value[data-target]').forEach(v => {
+    countUp(v, parseFloat(v.dataset.target), v.dataset.pct === '1', delayMs);
+  });
+  // Drop the stagger delay once the entrance is done so hover responds instantly
+  setTimeout(() => { el.style.transitionDelay = '0s'; }, delayMs + 700);
+}
+const REVEAL_SELECTOR = '.section-title, .kpi-card, .insight-card, .chart-section';
 const observer = new IntersectionObserver((entries) => {
-  entries.forEach(e => { if (e.isIntersecting) { e.target.classList.add('revealed'); observer.unobserve(e.target); } });
+  entries.forEach(e => { if (e.isIntersecting) { reveal(e.target); observer.unobserve(e.target); } });
 }, { threshold: 0.15 });
 function observeAll() {
-  document.querySelectorAll('.kpi-card, .insight-card, .chart-section').forEach(el => observer.observe(el));
+  document.querySelectorAll(REVEAL_SELECTOR).forEach(el => observer.observe(el));
 }
 
-// ── Intro (talent/people network animation) ──
+// The chart only animates while it is on screen
+const chartVisibility = new IntersectionObserver((entries) => {
+  entries.forEach(e => { chart.visible = e.isIntersecting; });
+}, { threshold: 0.15 });
+
+// ── Master animation loop ──
+function loop(ts) {
+  drawBg(ts);
+  if (chart.visible) drawChart(ts);
+  requestAnimationFrame(loop);
+}
+
+function redrawStatic() {
+  drawBg(0);
+  drawChart(performance.now());
+}
+
+window.addEventListener('resize', () => { sizeBg(); if (REDUCED) redrawStatic(); });
+if ('ResizeObserver' in window) {
+  new ResizeObserver(() => { sizeChart(); if (REDUCED) redrawStatic(); }).observe(canvas.parentElement);
+} else {
+  window.addEventListener('resize', sizeChart);
+}
+function onThemeChange() { readPalette(); if (REDUCED) redrawStatic(); }
+window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', onThemeChange);
+new MutationObserver(onThemeChange).observe(document.documentElement, { attributes: true, attributeFilter: ['data-theme'] });
+
+// ── Intro animation (talent/people network) ──
 function runIntro() {
   const ic = document.getElementById('introCanvas');
   const ictx = ic.getContext('2d');
@@ -514,20 +1177,24 @@ function runIntro() {
   ictx.scale(dpr, dpr);
   const W = window.innerWidth, H = window.innerHeight;
 
-  // People nodes — talent network
   const nodes = [];
   for (let i = 0; i < 20; i++) {
-    nodes.push({ x: Math.random() * W, y: Math.random() * H, vx: (Math.random() - 0.5) * 1.0, vy: (Math.random() - 0.5) * 1.0, r: 3 + Math.random() * 5 });
+    nodes.push({ x: Math.random() * W, y: Math.random() * H, vx: (Math.random() - 0.5) * 1.0, vy: (Math.random() - 0.5) * 1.0, r: 3 + Math.random() * 5, ph: Math.random() * 6.28 });
   }
+
   let start = null;
   function frame(ts) {
     if (!start) start = ts;
+    const elapsed = ts - start;
     ictx.clearRect(0, 0, W, H);
+
+    // Move nodes
     nodes.forEach(n => {
       n.x += n.vx; n.y += n.vy;
       if (n.x < 0 || n.x > W) n.vx *= -1;
       if (n.y < 0 || n.y > H) n.vy *= -1;
     });
+
     // Connections
     ictx.strokeStyle = 'rgba(74,138,90,0.10)'; ictx.lineWidth = 1;
     for (let i = 0; i < nodes.length; i++) {
@@ -541,29 +1208,49 @@ function runIntro() {
       }
     }
     ictx.globalAlpha = 1;
+
+    // Nodes, pulsing
     nodes.forEach(n => {
-      ictx.beginPath(); ictx.arc(n.x, n.y, n.r, 0, Math.PI * 2);
-      ictx.fillStyle = 'rgba(74,138,90,0.22)'; ictx.fill();
+      ictx.beginPath(); ictx.arc(n.x, n.y, n.r + Math.sin(ts / 260 + n.ph) * 1.2, 0, Math.PI * 2);
+      ictx.fillStyle = 'rgba(74,138,90,0.22)';
+      ictx.fill();
     });
-    if (ts - start < 2200) requestAnimationFrame(frame);
+
+    if (elapsed < 2600) requestAnimationFrame(frame);
   }
   requestAnimationFrame(frame);
 
+  // Fade out intro
   setTimeout(() => {
     document.getElementById('intro').classList.add('fade-out');
-    document.getElementById('dashboard').classList.add('visible');
-    observeAll(); drawChart(0);
+    startDashboard();
     setTimeout(() => { document.getElementById('intro').classList.add('hidden'); }, 600);
   }, 2000);
 }
 
-// ── Init ──
-if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
-  document.getElementById('intro').classList.add('hidden');
+function startDashboard() {
   document.getElementById('dashboard').classList.add('visible');
-  document.querySelectorAll('.kpi-card, .insight-card, .chart-section').forEach(el => el.classList.add('revealed'));
-  drawChart(0);
-} else { runIntro(); }
+  sizeBg();
+  sizeChart();
+  if (REDUCED) {
+    // Reduced motion: everything shown in its final state, nothing loops
+    document.querySelectorAll(REVEAL_SELECTOR).forEach(reveal);
+    chart.visible = true;
+    redrawStatic();
+    return;
+  }
+  observeAll();
+  chartVisibility.observe(canvas);
+  requestAnimationFrame(loop);
+}
+
+// ── Init ──
+if (REDUCED) {
+  document.getElementById('intro').classList.add('hidden');
+  startDashboard();
+} else {
+  runIntro();
+}
 </script>
 </body>
 </html>
